@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Captures incoming request IPs and resolves geolocation via ip-api.com",
   "type": "module",
+  "packageManager": "pnpm@10.30.3",
   "engines": {
     "node": ">=22"
   },
