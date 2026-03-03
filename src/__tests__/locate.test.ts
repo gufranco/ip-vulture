@@ -43,7 +43,7 @@ describe("GET /:id", () => {
     vi.restoreAllMocks();
   });
 
-  it("should return a random number between 0 and 100 on successful geolocation", async () => {
+  it("should return a fake Apache 404 page on successful geolocation", async () => {
     // Arrange
     fetchSpy.mockResolvedValueOnce(Response.json(GEOLOCATION_SUCCESS));
     const app = buildApp();
@@ -55,14 +55,19 @@ describe("GET /:id", () => {
     });
 
     // Assert
-    expect(response.statusCode).toBe(200);
-    const value = Number(response.body);
-    expect(value).toBeGreaterThanOrEqual(0);
-    expect(value).toBeLessThanOrEqual(100);
-    expect(Number.isInteger(value)).toBe(true);
+    expect(response.statusCode).toBe(404);
+    expect(response.headers["content-type"]).toBe(
+      "text/html; charset=iso-8859-1",
+    );
+    expect(response.headers.server).toBe("Apache/2.4.41 (Ubuntu)");
+    expect(response.body).toContain("<title>404 Not Found</title>");
+    expect(response.body).toContain(
+      "The requested URL /test-123 was not found",
+    );
+    expect(response.body).toContain("Apache/2.4.41 (Ubuntu)");
   });
 
-  it("should return a random number even when geolocation fails for reserved IPs", async () => {
+  it("should return a fake Apache 404 page even when geolocation fails", async () => {
     // Arrange
     fetchSpy.mockResolvedValueOnce(Response.json(GEOLOCATION_FAILURE));
     const app = buildApp();
@@ -74,10 +79,10 @@ describe("GET /:id", () => {
     });
 
     // Assert
-    expect(response.statusCode).toBe(200);
-    const value = Number(response.body);
-    expect(value).toBeGreaterThanOrEqual(0);
-    expect(value).toBeLessThanOrEqual(100);
+    expect(response.statusCode).toBe(404);
+    expect(response.body).toContain(
+      "The requested URL /local-test was not found",
+    );
   });
 
   it("should return 502 when ip-api.com returns a non-ok HTTP status", async () => {
@@ -131,5 +136,25 @@ describe("GET /:id", () => {
       "http://ip-api.com/json/200.100.50.25",
       expect.objectContaining({ signal: expect.any(AbortSignal) }),
     );
+  });
+});
+
+describe("GET /", () => {
+  it("should return a fake Apache 404 page without geolocation lookup", async () => {
+    // Arrange
+    const app = buildApp();
+
+    // Act
+    const response = await app.inject({
+      method: "GET",
+      url: "/",
+    });
+
+    // Assert
+    expect(response.statusCode).toBe(404);
+    expect(response.headers["content-type"]).toBe(
+      "text/html; charset=iso-8859-1",
+    );
+    expect(response.body).toContain("<title>404 Not Found</title>");
   });
 });

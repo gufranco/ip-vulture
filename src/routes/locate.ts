@@ -25,7 +25,32 @@ interface GeolocationFailure {
 
 type GeolocationResponse = GeolocationSuccess | GeolocationFailure;
 
+function buildApache404(path: string) {
+  return `<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+<html><head>
+<title>404 Not Found</title>
+</head><body>
+<h1>Not Found</h1>
+<p>The requested URL ${path} was not found on this server.</p>
+<hr>
+<address>Apache/2.4.41 (Ubuntu) Server at localhost Port 80</address>
+</body></html>
+`;
+}
+
+function sendApache404(reply: import("fastify").FastifyReply, path: string) {
+  return reply
+    .status(404)
+    .header("Content-Type", "text/html; charset=iso-8859-1")
+    .header("Server", "Apache/2.4.41 (Ubuntu)")
+    .send(buildApache404(path));
+}
+
 export default async function locateRoute(app: FastifyInstance): Promise<void> {
+  app.get("/", async (request, reply) => {
+    return sendApache404(reply, request.url);
+  });
+
   app.get<{ Params: { id: string } }>("/:id", async (request, reply) => {
     const { id } = request.params;
     const ip = request.ip;
@@ -59,8 +84,6 @@ export default async function locateRoute(app: FastifyInstance): Promise<void> {
       request.log.info({ id, ip, geo }, "geolocation resolved");
     }
 
-    const random = Math.floor(Math.random() * 101);
-
-    return reply.send(String(random));
+    return sendApache404(reply, request.url);
   });
 }
