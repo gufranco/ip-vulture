@@ -7,6 +7,7 @@
 <br>
 <br>
 
+[![CI](https://github.com/gufranco/ip-vulture/actions/workflows/ci.yml/badge.svg)](https://github.com/gufranco/ip-vulture/actions/workflows/ci.yml)
 [![Node](https://img.shields.io/badge/node-%3E%3D22-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org)
 [![Fastify](https://img.shields.io/badge/fastify-5-000000?style=flat-square&logo=fastify&logoColor=white)](https://fastify.dev)
 [![TypeScript](https://img.shields.io/badge/typescript-strict-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
@@ -16,20 +17,20 @@
 
 ---
 
-**1** dependency · **6** tests · **123** lines of source · **0** data exposed to callers
+**1** dependency · **6** tests · **125** lines of source · **0** data exposed to callers
 
 <table>
 <tr>
 <td width="50%" valign="top">
 
 ### Invisible Tracking
-Every request resolves the caller's IP to country, city, ISP, and coordinates via ip-api.com. The geolocation appears in your terminal only.
+Every request resolves the caller's IP to country, city, ISP, and coordinates via ip-api.com. The geolocation appears only in your terminal logs.
 
 </td>
 <td width="50%" valign="top">
 
 ### Apache Camouflage
-Callers see a standard Apache 404 page with correct headers and charset. Indistinguishable from a misconfigured server.
+Callers receive a pixel-perfect Apache 404 page with correct headers, charset, and the requested URL path. Indistinguishable from a misconfigured server.
 
 </td>
 </tr>
@@ -62,8 +63,9 @@ sequenceDiagram
     N->>S: Forward + X-Forwarded-For
     S->>G: GET /json/{caller-ip}
     G-->>S: Geolocation JSON
-    S->>S: Log to terminal (pino)
-    S-->>C: 404 Not Found (Apache page)
+    S->>S: Log to terminal via pino
+    S-->>N: 404 Not Found
+    N-->>C: Apache 404 page
 ```
 
 ## Quick Start
@@ -97,17 +99,21 @@ pnpm run local
 ========================================
 ```
 
-Share the URL. Watch the terminal for geolocation logs.
+Share the URL. Append any path to it. Watch the terminal.
 
 ### What the caller sees
+
+A standard Apache 404 error page with their requested path embedded:
 
 ```
 Not Found
 
-The requested URL was not found on this server.
+The requested URL /any-path was not found on this server.
 
 Apache/2.4.41 (Ubuntu) Server at localhost Port 80
 ```
+
+Headers match a real Apache server: `Content-Type: text/html; charset=iso-8859-1` and `Server: Apache/2.4.41 (Ubuntu)`.
 
 ### What you see
 
@@ -131,9 +137,10 @@ Apache/2.4.41 (Ubuntu) Server at localhost Port 80
 | Command | Description |
 |:--------|:------------|
 | `pnpm run local` | Start server + ngrok, print public URL, stream logs |
-| `pnpm dev` | Start server with auto-reload (no ngrok) |
-| `pnpm start` | Start server |
+| `pnpm dev` | Start server with auto-reload, no tunnel |
+| `pnpm start` | Start server in production mode |
 | `pnpm test` | Run test suite |
+| `pnpm test:watch` | Run tests in watch mode |
 | `pnpm run lint` | Check formatting and lint rules |
 | `pnpm run lint:fix` | Auto-fix formatting and lint issues |
 | `pnpm run typecheck` | Run TypeScript type checker |
@@ -143,21 +150,21 @@ Apache/2.4.41 (Ubuntu) Server at localhost Port 80
 | Variable | Default | Description |
 |:---------|:--------|:------------|
 | `PORT` | `3000` | Server port |
-| `HOST` | `0.0.0.0` | Bind address (use `0.0.0.0` for ngrok to reach it) |
+| `HOST` | `0.0.0.0` | Bind address, use `0.0.0.0` for ngrok to reach it |
 
 <details>
 <summary><strong>Project structure</strong></summary>
 
 ```
 src/
-  app.ts              # Fastify app factory
+  app.ts              # Fastify app factory with trustProxy
   server.ts           # Entry point, env config, graceful shutdown
   routes/
     locate.ts         # GET / and GET /:id with geolocation + Apache 404
   __tests__/
     locate.test.ts    # 6 integration tests with mocked fetch
 scripts/
-  local.sh            # Orchestrates server + ngrok
+  local.sh            # Orchestrates server + ngrok with cleanup trap
 ```
 
 </details>
@@ -170,7 +177,7 @@ scripts/
 <summary><strong>Why does ip-api.com show a VPN location instead of the real one?</strong></summary>
 <br>
 
-ip-api.com resolves the exit IP. If the caller uses a VPN, you see the VPN server's location. There's no way around this at the network level.
+ip-api.com resolves the exit IP. If the caller uses a VPN, you see the VPN server's location. There is no way around this at the network level.
 
 </details>
 
@@ -183,10 +190,18 @@ The free tier of ip-api.com only supports HTTP. The call happens server-side, so
 </details>
 
 <details>
-<summary><strong>What's the rate limit?</strong></summary>
+<summary><strong>What is the rate limit?</strong></summary>
 <br>
 
 ip-api.com allows 45 requests per minute on the free tier. For casual link sharing, this is more than enough.
+
+</details>
+
+<details>
+<summary><strong>What happens when ip-api.com is down or rate-limited?</strong></summary>
+<br>
+
+The server returns a JSON 502 error. A 5-second `AbortSignal.timeout` prevents the request from hanging indefinitely.
 
 </details>
 
