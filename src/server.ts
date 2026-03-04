@@ -1,9 +1,12 @@
 import { buildApp } from "./app.js";
+import { resolveTemplate } from "./templates/registry.js";
 
 const port = Number(process.env.PORT) || 3000;
 const host = process.env.HOST || "0.0.0.0";
+const serverTemplate = process.env.SERVER_TEMPLATE || "apache";
 
-const app = buildApp();
+const template = resolveTemplate(serverTemplate);
+const app = buildApp(template);
 app.log.level = "info";
 
 const shutdown = async () => {

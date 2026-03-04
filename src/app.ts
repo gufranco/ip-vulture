@@ -1,13 +1,16 @@
 import fastify from "fastify";
-import locateRoute from "./routes/locate.js";
+import { createLocateRoute } from "./routes/locate.js";
+import type { ServerTemplate } from "./templates/template.js";
 
-export function buildApp() {
+function buildApp(template: ServerTemplate) {
   const app = fastify({
     logger: false,
     trustProxy: true,
   });
 
-  app.register(locateRoute);
+  app.register(createLocateRoute(template));
 
   return app;
 }
+
+export { buildApp };

@@ -8,6 +8,7 @@ import {
   vi,
 } from "vitest";
 import { buildApp } from "../app.js";
+import { apacheTemplate } from "../templates/apache.js";
 
 const GEOLOCATION_SUCCESS = {
   status: "success" as const,
@@ -43,10 +44,10 @@ describe("GET /:id", () => {
     vi.restoreAllMocks();
   });
 
-  it("should return a fake Apache 404 page on successful geolocation", async () => {
+  it("should return a fake 404 page on successful geolocation", async () => {
     // Arrange
     fetchSpy.mockResolvedValueOnce(Response.json(GEOLOCATION_SUCCESS));
-    const app = buildApp();
+    const app = buildApp(apacheTemplate);
 
     // Act
     const response = await app.inject({
@@ -59,18 +60,18 @@ describe("GET /:id", () => {
     expect(response.headers["content-type"]).toBe(
       "text/html; charset=iso-8859-1",
     );
-    expect(response.headers.server).toBe("Apache/2.4.41 (Ubuntu)");
+    expect(response.headers.server).toBe("Apache/2.4.62 (Ubuntu)");
     expect(response.body).toContain("<title>404 Not Found</title>");
     expect(response.body).toContain(
       "The requested URL /test-123 was not found",
     );
-    expect(response.body).toContain("Apache/2.4.41 (Ubuntu)");
+    expect(response.body).toContain("Apache/2.4.62 (Ubuntu)");
   });
 
-  it("should return a fake Apache 404 page even when geolocation fails", async () => {
+  it("should return a fake 404 page even when geolocation fails", async () => {
     // Arrange
     fetchSpy.mockResolvedValueOnce(Response.json(GEOLOCATION_FAILURE));
-    const app = buildApp();
+    const app = buildApp(apacheTemplate);
 
     // Act
     const response = await app.inject({
@@ -90,7 +91,7 @@ describe("GET /:id", () => {
     fetchSpy.mockResolvedValueOnce(
       new Response("Too Many Requests", { status: 429 }),
     );
-    const app = buildApp();
+    const app = buildApp(apacheTemplate);
 
     // Act
     const response = await app.inject({
@@ -106,7 +107,7 @@ describe("GET /:id", () => {
   it("should return 502 when ip-api.com is unreachable", async () => {
     // Arrange
     fetchSpy.mockRejectedValueOnce(new Error("fetch failed"));
-    const app = buildApp();
+    const app = buildApp(apacheTemplate);
 
     // Act
     const response = await app.inject({
@@ -122,7 +123,7 @@ describe("GET /:id", () => {
   it("should call ip-api.com with the request IP", async () => {
     // Arrange
     fetchSpy.mockResolvedValueOnce(Response.json(GEOLOCATION_SUCCESS));
-    const app = buildApp();
+    const app = buildApp(apacheTemplate);
 
     // Act
     await app.inject({
@@ -140,9 +141,9 @@ describe("GET /:id", () => {
 });
 
 describe("GET /", () => {
-  it("should return a fake Apache 404 page without geolocation lookup", async () => {
+  it("should return a fake 404 page without geolocation lookup", async () => {
     // Arrange
-    const app = buildApp();
+    const app = buildApp(apacheTemplate);
 
     // Act
     const response = await app.inject({
