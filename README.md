@@ -2,7 +2,7 @@
 
 <h1>ip-vulture</h1>
 
-<strong>Share a link. Log their location. They see nothing.</strong>
+<strong>Share a link. Log their location. They see a dead server.</strong>
 
 <br>
 <br>
@@ -17,7 +17,7 @@
 
 ---
 
-**1** dependency · **6** tests · **125** lines of source · **0** data exposed to callers
+**1** runtime dependency · **10** server disguises · **49** tests · **428** lines of source · **0** data exposed to callers
 
 <table>
 <tr>
@@ -29,8 +29,8 @@ Every request resolves the caller's IP to country, city, ISP, and coordinates vi
 </td>
 <td width="50%" valign="top">
 
-### Apache Camouflage
-Callers receive a pixel-perfect Apache 404 page with correct headers, charset, and the requested URL path. Indistinguishable from a misconfigured server.
+### 10 Server Disguises
+Impersonate Apache, Nginx, IIS, Caddy, Lighttpd, LiteSpeed, Tomcat, OpenResty, Traefik, or HAProxy. Each template replicates real headers, content types, and HTML structure.
 
 </td>
 </tr>
@@ -44,7 +44,7 @@ Callers receive a pixel-perfect Apache 404 page with correct headers, charset, a
 <td width="50%" valign="top">
 
 ### Proxy-Aware
-`trustProxy` extracts the real client IP from `X-Forwarded-For`, whether behind ngrok, nginx, or any reverse proxy.
+`trustProxy` extracts the real client IP from `X-Forwarded-For`, whether behind ngrok, Nginx, or any reverse proxy.
 
 </td>
 </tr>
@@ -63,10 +63,31 @@ sequenceDiagram
     N->>S: Forward + X-Forwarded-For
     S->>G: GET /json/{caller-ip}
     G-->>S: Geolocation JSON
-    S->>S: Log to terminal via pino
+    S->>S: Log to terminal
     S-->>N: 404 Not Found
-    N-->>C: Apache 404 page
+    N-->>C: Fake error page
 ```
+
+The caller sees what looks like a misconfigured server returning a 404. You see their IP, country, city, ISP, coordinates, and timezone in the terminal.
+
+## Server Templates
+
+Pick a disguise with the `SERVER_TEMPLATE` environment variable. Set it to `random` to let ip-vulture pick one at startup.
+
+| Template | Server Header | Content-Type | Path in Body |
+|:---------|:-------------|:-------------|:------------:|
+| `apache` | `Apache/2.4.62 (Ubuntu)` | `text/html; charset=iso-8859-1` | Yes |
+| `nginx` | `nginx/1.27.4` | `text/html` | No |
+| `iis` | `Microsoft-IIS/10.0` | `text/html` | No |
+| `caddy` | `Caddy` | none | No |
+| `lighttpd` | `lighttpd/1.4.76` | `text/html` | No |
+| `litespeed` | `LiteSpeed` | `text/html` | No |
+| `tomcat` | none | `text/html;charset=utf-8` | Yes |
+| `openresty` | `openresty/1.27.1.1` | `text/html` | No |
+| `traefik` | none | `text/plain; charset=utf-8` | No |
+| `haproxy` | none | `text/html` | No |
+
+IIS also sets `X-Powered-By: ASP.NET`. Traefik sets `X-Content-Type-Options: nosniff`. HAProxy sets `Cache-Control: no-cache`. Every header is matched to the real server's default behavior.
 
 ## Quick Start
 
@@ -103,7 +124,7 @@ Share the URL. Append any path to it. Watch the terminal.
 
 ### What the caller sees
 
-A standard Apache 404 error page with their requested path embedded:
+Depends on the template. With `apache` (the default):
 
 ```
 Not Found
@@ -113,7 +134,7 @@ The requested URL /any-path was not found on this server.
 Apache/2.4.41 (Ubuntu) Server at localhost Port 80
 ```
 
-Headers match a real Apache server: `Content-Type: text/html; charset=iso-8859-1` and `Server: Apache/2.4.41 (Ubuntu)`.
+Headers match a real Apache server: `Content-Type: text/html; charset=iso-8859-1` and `Server: Apache/2.4.62 (Ubuntu)`.
 
 ### What you see
 
@@ -151,6 +172,7 @@ Headers match a real Apache server: `Content-Type: text/html; charset=iso-8859-1
 |:---------|:--------|:------------|
 | `PORT` | `3000` | Server port |
 | `HOST` | `0.0.0.0` | Bind address, use `0.0.0.0` for ngrok to reach it |
+| `SERVER_TEMPLATE` | `apache` | Which server to impersonate. One of: `apache`, `nginx`, `iis`, `caddy`, `lighttpd`, `litespeed`, `tomcat`, `openresty`, `traefik`, `haproxy`, `random` |
 
 <details>
 <summary><strong>Project structure</strong></summary>
@@ -160,9 +182,24 @@ src/
   app.ts              # Fastify app factory with trustProxy
   server.ts           # Entry point, env config, graceful shutdown
   routes/
-    locate.ts         # GET / and GET /:id with geolocation + Apache 404
+    locate.ts         # GET / and GET /:id with geolocation + fake 404
+  templates/
+    template.ts       # ServerTemplate interface and ServerName enum
+    registry.ts       # Template registry, resolver, and random picker
+    apache.ts         # Apache 2.4.62 (Ubuntu) 404 page
+    nginx.ts          # nginx 1.27.4 404 page
+    iis.ts            # Microsoft-IIS/10.0 404 page
+    caddy.ts          # Caddy empty response
+    lighttpd.ts       # lighttpd 1.4.76 404 page
+    litespeed.ts      # LiteSpeed styled 404 page
+    tomcat.ts         # Apache Tomcat 10.1.34 404 page (XSS-safe)
+    openresty.ts      # openresty 1.27.1.1 404 page
+    traefik.ts        # Traefik plain-text 404
+    haproxy.ts        # HAProxy 404 page
   __tests__/
-    locate.test.ts    # 6 integration tests with mocked fetch
+    locate.test.ts    # Integration tests for the locate route
+    registry.test.ts  # Unit tests for template resolution
+    templates.test.ts # Contract tests for all 10 templates
 scripts/
   local.sh            # Orchestrates server + ngrok with cleanup trap
 ```
@@ -202,6 +239,14 @@ ip-api.com allows 45 requests per minute on the free tier. For casual link shari
 <br>
 
 The server returns a JSON 502 error. A 5-second `AbortSignal.timeout` prevents the request from hanging indefinitely.
+
+</details>
+
+<details>
+<summary><strong>How do I add a new server template?</strong></summary>
+<br>
+
+Create a new file in `src/templates/` implementing the `ServerTemplate` interface: a `name` from the `ServerName` enum, a frozen `headers` object, and a `render(path)` function. Add the enum value to `ServerName` in `template.ts` and register it in the `templates` map in `registry.ts`.
 
 </details>
 
