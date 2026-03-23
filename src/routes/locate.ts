@@ -2,26 +2,26 @@ import type { FastifyInstance, FastifyReply } from "fastify";
 import type { ServerTemplate } from "../templates/template.js";
 
 interface GeolocationSuccess {
-  status: "success";
-  country: string;
-  countryCode: string;
-  region: string;
-  regionName: string;
-  city: string;
-  zip: string;
-  lat: number;
-  lon: number;
-  timezone: string;
-  isp: string;
-  org: string;
-  as: string;
-  query: string;
+  readonly status: "success";
+  readonly country: string;
+  readonly countryCode: string;
+  readonly region: string;
+  readonly regionName: string;
+  readonly city: string;
+  readonly zip: string;
+  readonly lat: number;
+  readonly lon: number;
+  readonly timezone: string;
+  readonly isp: string;
+  readonly org: string;
+  readonly as: string;
+  readonly query: string;
 }
 
 interface GeolocationFailure {
-  status: "fail";
-  message: string;
-  query: string;
+  readonly status: "fail";
+  readonly message: string;
+  readonly query: string;
 }
 
 type GeolocationResponse = GeolocationSuccess | GeolocationFailure;
@@ -40,40 +40,43 @@ function createLocateRoute(template: ServerTemplate) {
       return sendNotFound(reply, request.url);
     });
 
-    app.get<{ Params: { id: string } }>("/:id", async (request, reply) => {
-      const { id } = request.params;
-      const ip = request.ip;
+    app.get<{ Params: { readonly id: string } }>(
+      "/:id",
+      async (request, reply) => {
+        const { id } = request.params;
+        const ip = request.ip;
 
-      request.log.info({ id, ip, ips: request.ips }, "incoming request");
+        request.log.info({ id, ip, ips: request.ips }, "incoming request");
 
-      try {
-        const response = await fetch(`http://ip-api.com/json/${ip}`, {
-          signal: AbortSignal.timeout(5000),
-        });
+        try {
+          const response = await fetch(`http://ip-api.com/json/${ip}`, {
+            signal: AbortSignal.timeout(5000),
+          });
 
-        if (!response.ok) {
-          request.log.warn(
-            { status: response.status },
-            "ip-api.com returned error status",
-          );
-        } else {
-          const geo: GeolocationResponse = await response.json();
-
-          if (geo.status === "fail") {
+          if (!response.ok) {
             request.log.warn(
-              { id, ip, reason: geo.message },
-              "geolocation failed",
+              { status: response.status },
+              "ip-api.com returned error status",
             );
           } else {
-            request.log.info({ id, ip, geo }, "geolocation resolved");
-          }
-        }
-      } catch (error) {
-        request.log.warn({ error }, "ip-api.com request failed");
-      }
+            const geo: GeolocationResponse = await response.json();
 
-      return sendNotFound(reply, request.url);
-    });
+            if (geo.status === "fail") {
+              request.log.warn(
+                { id, ip, reason: geo.message },
+                "geolocation failed",
+              );
+            } else {
+              request.log.info({ id, ip, geo }, "geolocation resolved");
+            }
+          }
+        } catch (error) {
+          request.log.warn({ error }, "ip-api.com request failed");
+        }
+
+        return sendNotFound(reply, request.url);
+      },
+    );
   };
 }
 
