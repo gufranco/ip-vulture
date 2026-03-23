@@ -56,6 +56,16 @@ describe("Apache template", () => {
     expect(body).toContain("The requested URL /some/page was not found");
   });
 
+  it("should escape HTML in the path", () => {
+    // Arrange
+    // Act
+    const body = apacheTemplate.render("/<script>alert(1)</script>");
+
+    // Assert
+    expect(body).not.toContain("<script>");
+    expect(body).toContain("&lt;script&gt;");
+  });
+
   it("should set Content-Type and Server headers", () => {
     // Arrange
     // Act
