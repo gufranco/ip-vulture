@@ -1,4 +1,5 @@
 import fastify from "fastify";
+import { healthRoute } from "./routes/health.js";
 import { createLocateRoute } from "./routes/locate.js";
 import type { ServerTemplate } from "./templates/template.js";
 
@@ -13,6 +14,7 @@ function buildApp({ template, logger = false }: AppOptions) {
     trustProxy: true,
   });
 
+  app.register(healthRoute);
   app.register(createLocateRoute(template));
 
   return app;
