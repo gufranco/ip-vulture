@@ -11,20 +11,21 @@
 [![Node](https://img.shields.io/badge/node-%3E%3D24-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org)
 [![Fastify](https://img.shields.io/badge/fastify-5-000000?style=flat-square&logo=fastify&logoColor=white)](https://fastify.dev)
 [![TypeScript](https://img.shields.io/badge/typescript-strict-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![Coverage](https://img.shields.io/badge/coverage-96%25-brightgreen?style=flat-square)]()
 [![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 
 </div>
 
 ---
 
-**2** runtime dependencies · **10** server disguises · **63** tests · **489** lines of source · **0** data exposed to callers
+**2** runtime dependencies · **10** server disguises · **63** tests at **96%** coverage · **492** lines of source · **0** data exposed to callers
 
 <table>
 <tr>
 <td width="50%" valign="top">
 
 ### Invisible Tracking
-Every request resolves the caller's IP to country, city, ISP, and coordinates via ip-api.com. The geolocation appears only in your terminal logs.
+Every request resolves the caller's IP to country, city, ISP, and coordinates via ip-api.com. The geolocation appears only in your terminal logs. The caller sees nothing.
 
 </td>
 <td width="50%" valign="top">
@@ -43,8 +44,8 @@ Impersonate Apache, Nginx, IIS, Caddy, Lighttpd, LiteSpeed, Tomcat, OpenResty, T
 </td>
 <td width="50%" valign="top">
 
-### Proxy-Aware
-`trustProxy` extracts the real client IP from `X-Forwarded-For`, whether behind ngrok, Nginx, or any reverse proxy.
+### Rate-Limited and XSS-Safe
+Built-in rate limiting stays under ip-api.com's free tier. All path-rendering templates escape HTML to prevent reflected XSS.
 
 </td>
 </tr>
@@ -55,7 +56,7 @@ Impersonate Apache, Nginx, IIS, Caddy, Lighttpd, LiteSpeed, Tomcat, OpenResty, T
 ```mermaid
 sequenceDiagram
     participant C as Caller
-    participant N as ngrok
+    participant N as ngrok / Reverse Proxy
     participant S as ip-vulture
     participant G as ip-api.com
 
@@ -68,7 +69,7 @@ sequenceDiagram
     N-->>C: Fake error page
 ```
 
-The caller sees what looks like a misconfigured server returning a 404. You see their IP, country, city, ISP, coordinates, and timezone in the terminal.
+The caller sees what looks like a misconfigured server returning a 404. You see their IP, country, city, ISP, coordinates, and timezone in the terminal. If ip-api.com is down, the disguise holds: the caller still gets the fake 404 page.
 
 ## Server Templates
 
@@ -87,7 +88,7 @@ Pick a disguise with the `SERVER_TEMPLATE` environment variable. Set it to `rand
 | `traefik` | none | `text/plain; charset=utf-8` | No |
 | `haproxy` | none | `text/html` | No |
 
-IIS also sets `X-Powered-By: ASP.NET`. Traefik sets `X-Content-Type-Options: nosniff`. HAProxy sets `Cache-Control: no-cache`. Every header is matched to the real server's default behavior.
+IIS also sets `X-Powered-By: ASP.NET`. Traefik sets `X-Content-Type-Options: nosniff`. HAProxy sets `Cache-Control: no-cache`. Every header matches the real server's default behavior.
 
 ## Quick Start
 
@@ -98,6 +99,8 @@ IIS also sets `X-Powered-By: ASP.NET`. Traefik sets `X-Content-Type-Options: nos
 | Node.js | >= 24 | [nodejs.org](https://nodejs.org) |
 | pnpm | >= 9 | `corepack enable pnpm` |
 | ngrok | any | [ngrok.com](https://ngrok.com/download) |
+
+ngrok is only needed for the tunnel mode. Direct server hosting requires no additional tools.
 
 ### Setup
 
@@ -122,6 +125,21 @@ pnpm run local
 
 Share the URL. Append any path to it. Watch the terminal.
 
+### Run on a server
+
+```bash
+pnpm start
+```
+
+Set `HOST` and `PORT` in `.env` to match your deployment. Works behind any reverse proxy that sets `X-Forwarded-For`.
+
+### Verify
+
+```bash
+curl http://localhost:3000/health
+# {"status":"ok"}
+```
+
 ### What the caller sees
 
 Depends on the template. With `apache` (the default):
@@ -131,7 +149,7 @@ Not Found
 
 The requested URL /any-path was not found on this server.
 
-Apache/2.4.41 (Ubuntu) Server at localhost Port 80
+Apache/2.4.62 (Ubuntu) Server at localhost Port 80
 ```
 
 Headers match a real Apache server: `Content-Type: text/html; charset=iso-8859-1` and `Server: Apache/2.4.62 (Ubuntu)`.
@@ -153,6 +171,14 @@ Headers match a real Apache server: `Content-Type: text/html; charset=iso-8859-1
 }
 ```
 
+## Configuration
+
+| Variable | Default | Description |
+|:---------|:--------|:------------|
+| `PORT` | `3000` | Server port. Validated at startup: must be 1-65535 |
+| `HOST` | `0.0.0.0` | Bind address. Use `0.0.0.0` for ngrok or container deployments |
+| `SERVER_TEMPLATE` | `apache` | Which server to impersonate. One of: `apache`, `nginx`, `iis`, `caddy`, `lighttpd`, `litespeed`, `tomcat`, `openresty`, `traefik`, `haproxy`, `random` |
+
 ## Scripts
 
 | Command | Description |
@@ -161,18 +187,10 @@ Headers match a real Apache server: `Content-Type: text/html; charset=iso-8859-1
 | `pnpm dev` | Start server with auto-reload, no tunnel |
 | `pnpm start` | Start server in production mode |
 | `pnpm test` | Run test suite |
-| `pnpm test:watch` | Run tests in watch mode |
+| `pnpm test -- --coverage` | Run tests with coverage report |
 | `pnpm run lint` | Check formatting and lint rules |
 | `pnpm run lint:fix` | Auto-fix formatting and lint issues |
 | `pnpm run typecheck` | Run TypeScript type checker |
-
-## Configuration
-
-| Variable | Default | Description |
-|:---------|:--------|:------------|
-| `PORT` | `3000` | Server port |
-| `HOST` | `0.0.0.0` | Bind address, use `0.0.0.0` for ngrok to reach it |
-| `SERVER_TEMPLATE` | `apache` | Which server to impersonate. One of: `apache`, `nginx`, `iis`, `caddy`, `lighttpd`, `litespeed`, `tomcat`, `openresty`, `traefik`, `haproxy`, `random` |
 
 <details>
 <summary><strong>Project structure</strong></summary>
@@ -235,7 +253,7 @@ The free tier of ip-api.com only supports HTTP. The call happens server-side, so
 <summary><strong>What is the rate limit?</strong></summary>
 <br>
 
-ip-api.com allows 45 requests per minute on the free tier. For casual link sharing, this is more than enough.
+ip-api.com allows 45 requests per minute on the free tier. ip-vulture enforces a server-side limit of 40 requests per minute to stay safely under this threshold. The `/health` endpoint is exempt from rate limiting.
 
 </details>
 
@@ -248,10 +266,18 @@ The caller still sees the fake 404 page. The geolocation lookup fails silently a
 </details>
 
 <details>
+<summary><strong>Can I host this on a server without ngrok?</strong></summary>
+<br>
+
+Yes. Run `pnpm start` with `HOST` and `PORT` set in `.env`. The server works behind any reverse proxy that sets `X-Forwarded-For`. The `trustProxy` setting extracts the real client IP automatically.
+
+</details>
+
+<details>
 <summary><strong>How do I add a new server template?</strong></summary>
 <br>
 
-Create a new file in `src/templates/` implementing the `ServerTemplate` interface: a `name` from the `ServerName` enum, a frozen `headers` object, and a `render(path)` function. Add the enum value to `ServerName` in `template.ts` and register it in the `templates` map in `registry.ts`.
+Create a new file in `src/templates/` implementing the `ServerTemplate` interface: a `name` from the `ServerName` enum, a frozen `headers` object, and a `render(path)` function. If the template renders the path in its body, use `escapeHtml()` from `escape.ts` to prevent XSS. Add the enum value to `ServerName` in `template.ts` and register it in the `templates` map in `registry.ts`.
 
 </details>
 
