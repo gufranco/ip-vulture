@@ -47,7 +47,7 @@ describe("GET /:id", () => {
   it("should return a fake 404 page on successful geolocation", async () => {
     // Arrange
     fetchSpy.mockResolvedValueOnce(Response.json(GEOLOCATION_SUCCESS));
-    const app = buildApp(apacheTemplate);
+    const app = buildApp({ template: apacheTemplate });
 
     // Act
     const response = await app.inject({
@@ -71,7 +71,7 @@ describe("GET /:id", () => {
   it("should return a fake 404 page even when geolocation fails", async () => {
     // Arrange
     fetchSpy.mockResolvedValueOnce(Response.json(GEOLOCATION_FAILURE));
-    const app = buildApp(apacheTemplate);
+    const app = buildApp({ template: apacheTemplate });
 
     // Act
     const response = await app.inject({
@@ -91,7 +91,7 @@ describe("GET /:id", () => {
     fetchSpy.mockResolvedValueOnce(
       new Response("Too Many Requests", { status: 429 }),
     );
-    const app = buildApp(apacheTemplate);
+    const app = buildApp({ template: apacheTemplate });
 
     // Act
     const response = await app.inject({
@@ -112,7 +112,7 @@ describe("GET /:id", () => {
   it("should return a fake 404 page when ip-api.com is unreachable", async () => {
     // Arrange
     fetchSpy.mockRejectedValueOnce(new Error("fetch failed"));
-    const app = buildApp(apacheTemplate);
+    const app = buildApp({ template: apacheTemplate });
 
     // Act
     const response = await app.inject({
@@ -133,7 +133,7 @@ describe("GET /:id", () => {
   it("should call ip-api.com with the request IP", async () => {
     // Arrange
     fetchSpy.mockResolvedValueOnce(Response.json(GEOLOCATION_SUCCESS));
-    const app = buildApp(apacheTemplate);
+    const app = buildApp({ template: apacheTemplate });
 
     // Act
     await app.inject({
@@ -153,7 +153,7 @@ describe("GET /:id", () => {
 describe("GET /", () => {
   it("should return a fake 404 page without geolocation lookup", async () => {
     // Arrange
-    const app = buildApp(apacheTemplate);
+    const app = buildApp({ template: apacheTemplate });
 
     // Act
     const response = await app.inject({

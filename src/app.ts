@@ -2,9 +2,14 @@ import fastify from "fastify";
 import { createLocateRoute } from "./routes/locate.js";
 import type { ServerTemplate } from "./templates/template.js";
 
-function buildApp(template: ServerTemplate) {
+interface AppOptions {
+  readonly template: ServerTemplate;
+  readonly logger?: boolean;
+}
+
+function buildApp({ template, logger = false }: AppOptions) {
   const app = fastify({
-    logger: false,
+    logger,
     trustProxy: true,
   });
 
@@ -13,4 +18,4 @@ function buildApp(template: ServerTemplate) {
   return app;
 }
 
-export { buildApp };
+export { type AppOptions, buildApp };
