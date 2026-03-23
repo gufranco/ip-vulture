@@ -86,7 +86,7 @@ describe("GET /:id", () => {
     );
   });
 
-  it("should return 502 when ip-api.com returns a non-ok HTTP status", async () => {
+  it("should return a fake 404 page when ip-api.com returns a non-ok HTTP status", async () => {
     // Arrange
     fetchSpy.mockResolvedValueOnce(
       new Response("Too Many Requests", { status: 429 }),
@@ -100,11 +100,16 @@ describe("GET /:id", () => {
     });
 
     // Assert
-    expect(response.statusCode).toBe(502);
-    expect(response.json()).toEqual({ error: "geolocation lookup failed" });
+    expect(response.statusCode).toBe(404);
+    expect(response.headers["content-type"]).toBe(
+      "text/html; charset=iso-8859-1",
+    );
+    expect(response.body).toContain(
+      "The requested URL /rate-limited was not found",
+    );
   });
 
-  it("should return 502 when ip-api.com is unreachable", async () => {
+  it("should return a fake 404 page when ip-api.com is unreachable", async () => {
     // Arrange
     fetchSpy.mockRejectedValueOnce(new Error("fetch failed"));
     const app = buildApp(apacheTemplate);
@@ -116,8 +121,13 @@ describe("GET /:id", () => {
     });
 
     // Assert
-    expect(response.statusCode).toBe(502);
-    expect(response.json()).toEqual({ error: "geolocation lookup failed" });
+    expect(response.statusCode).toBe(404);
+    expect(response.headers["content-type"]).toBe(
+      "text/html; charset=iso-8859-1",
+    );
+    expect(response.body).toContain(
+      "The requested URL /unreachable was not found",
+    );
   });
 
   it("should call ip-api.com with the request IP", async () => {

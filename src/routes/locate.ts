@@ -46,31 +46,30 @@ function createLocateRoute(template: ServerTemplate) {
 
       request.log.info({ id, ip, ips: request.ips }, "incoming request");
 
-      let response: Response;
-
       try {
-        response = await fetch(`http://ip-api.com/json/${ip}`, {
+        const response = await fetch(`http://ip-api.com/json/${ip}`, {
           signal: AbortSignal.timeout(5000),
         });
+
+        if (!response.ok) {
+          request.log.warn(
+            { status: response.status },
+            "ip-api.com returned error status",
+          );
+        } else {
+          const geo: GeolocationResponse = await response.json();
+
+          if (geo.status === "fail") {
+            request.log.warn(
+              { id, ip, reason: geo.message },
+              "geolocation failed",
+            );
+          } else {
+            request.log.info({ id, ip, geo }, "geolocation resolved");
+          }
+        }
       } catch (error) {
-        request.log.error({ error }, "ip-api.com request failed");
-        return reply.status(502).send({ error: "geolocation lookup failed" });
-      }
-
-      if (!response.ok) {
-        request.log.error(
-          { status: response.status },
-          "ip-api.com returned error status",
-        );
-        return reply.status(502).send({ error: "geolocation lookup failed" });
-      }
-
-      const geo: GeolocationResponse = await response.json();
-
-      if (geo.status === "fail") {
-        request.log.warn({ id, ip, reason: geo.message }, "geolocation failed");
-      } else {
-        request.log.info({ id, ip, geo }, "geolocation resolved");
+        request.log.warn({ error }, "ip-api.com request failed");
       }
 
       return sendNotFound(reply, request.url);
