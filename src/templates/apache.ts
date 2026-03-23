@@ -1,3 +1,4 @@
+import { escapeHtml } from "./escape.js";
 import { ServerName, type ServerTemplate } from "./template.js";
 
 const apacheTemplate: ServerTemplate = {
@@ -9,12 +10,14 @@ const apacheTemplate: ServerTemplate = {
   }),
 
   render(path: string): string {
+    const escapedPath = escapeHtml(path);
+
     return `<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
 <html><head>
 <title>404 Not Found</title>
 </head><body>
 <h1>Not Found</h1>
-<p>The requested URL ${path} was not found on this server.</p>
+<p>The requested URL ${escapedPath} was not found on this server.</p>
 <hr>
 <address>Apache/2.4.62 (Ubuntu) Server at localhost Port 80</address>
 </body></html>
