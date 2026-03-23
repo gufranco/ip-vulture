@@ -18,7 +18,6 @@ function buildApp({ template, logger = false }: AppOptions) {
   app.register(rateLimit, {
     max: 40,
     timeWindow: 60_000,
-    allowList: ["/health"],
   });
 
   app.register(healthRoute);

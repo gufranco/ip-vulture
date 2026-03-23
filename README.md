@@ -8,7 +8,7 @@
 <br>
 
 [![CI](https://github.com/gufranco/ip-vulture/actions/workflows/ci.yml/badge.svg)](https://github.com/gufranco/ip-vulture/actions/workflows/ci.yml)
-[![Node](https://img.shields.io/badge/node-%3E%3D22-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org)
+[![Node](https://img.shields.io/badge/node-%3E%3D24-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org)
 [![Fastify](https://img.shields.io/badge/fastify-5-000000?style=flat-square&logo=fastify&logoColor=white)](https://fastify.dev)
 [![TypeScript](https://img.shields.io/badge/typescript-strict-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
@@ -17,7 +17,7 @@
 
 ---
 
-**1** runtime dependency · **10** server disguises · **49** tests · **428** lines of source · **0** data exposed to callers
+**2** runtime dependencies · **10** server disguises · **63** tests · **489** lines of source · **0** data exposed to callers
 
 <table>
 <tr>
@@ -95,7 +95,7 @@ IIS also sets `X-Powered-By: ASP.NET`. Traefik sets `X-Content-Type-Options: nos
 
 | Tool | Version | Install |
 |:-----|:--------|:--------|
-| Node.js | >= 22 | [nodejs.org](https://nodejs.org) |
+| Node.js | >= 24 | [nodejs.org](https://nodejs.org) |
 | pnpm | >= 9 | `corepack enable pnpm` |
 | ngrok | any | [ngrok.com](https://ngrok.com/download) |
 
@@ -179,13 +179,16 @@ Headers match a real Apache server: `Content-Type: text/html; charset=iso-8859-1
 
 ```
 src/
-  app.ts              # Fastify app factory with trustProxy
-  server.ts           # Entry point, env config, graceful shutdown
+  app.ts              # Fastify app factory with trustProxy and rate limiting
+  config.ts           # Env var validation and typed config loader
+  server.ts           # Entry point, graceful shutdown
   routes/
+    health.ts         # GET /health liveness probe (rate-limit exempt)
     locate.ts         # GET / and GET /:id with geolocation + fake 404
   templates/
     template.ts       # ServerTemplate interface and ServerName enum
     registry.ts       # Template registry, resolver, and random picker
+    escape.ts         # Shared HTML escaping for XSS prevention
     apache.ts         # Apache 2.4.62 (Ubuntu) 404 page
     nginx.ts          # nginx 1.27.4 404 page
     iis.ts            # Microsoft-IIS/10.0 404 page
@@ -197,7 +200,9 @@ src/
     traefik.ts        # Traefik plain-text 404
     haproxy.ts        # HAProxy 404 page
   __tests__/
-    locate.test.ts    # Integration tests for the locate route
+    config.test.ts    # Config validation tests
+    escape.test.ts    # HTML escaping unit tests
+    locate.test.ts    # Integration tests for locate and health routes
     registry.test.ts  # Unit tests for template resolution
     templates.test.ts # Contract tests for all 10 templates
 scripts/
@@ -238,7 +243,7 @@ ip-api.com allows 45 requests per minute on the free tier. For casual link shari
 <summary><strong>What happens when ip-api.com is down or rate-limited?</strong></summary>
 <br>
 
-The server returns a JSON 502 error. A 5-second `AbortSignal.timeout` prevents the request from hanging indefinitely.
+The caller still sees the fake 404 page. The geolocation lookup fails silently and logs a warning to your terminal. A 5-second `AbortSignal.timeout` prevents the request from hanging indefinitely. The disguise is never broken.
 
 </details>
 
