@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/gufranco/ip-vulture/compare/v1.1.0...v1.1.1) (2026-08-17)
+
+
+### Bug Fixes
+
+* **config:** default the simulation disclosure marker to off ([070211f](https://github.com/gufranco/ip-vulture/commit/070211f4810631bdcc74022f491809acac3d800c))
+
 # [1.1.0](https://github.com/gufranco/ip-vulture/compare/v1.0.0...v1.1.0) (2026-08-17)
 
 
