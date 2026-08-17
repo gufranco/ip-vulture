@@ -283,7 +283,7 @@ function loadConfig(env: EnvSource, options: LoadOptions): Config {
     env,
     "SIMULATION_DISCLOSURE",
     disclosureModes,
-    "both",
+    "off",
   );
   const filterEra = parseOptionalEnum(
     env,

@@ -75,6 +75,10 @@ The lists are parsed into memory and never written to disk, which is why they ar
 
 Confirm each licence against its current terms before relying on it commercially. The summaries above were recorded when the feed list was assembled and are not a substitute for reading the source.
 
+## Response marking
+
+`SIMULATION_DISCLOSURE` defaults to `off`, so responses carry no header or comment identifying them as simulated. This is a fidelity choice, not a data-handling one: it changes what the caller sees, never what is recorded. Set it to `both` to mark every response.
+
 ## The one place persistence can leak back in
 
 The application writes nothing to disk, but its stdout is a different question. Under a container runtime's default logging driver, everything the process prints is written to a file on the host. The compose file therefore sets `logging.driver` to `none` by default, and [DEPLOYMENT.md](DEPLOYMENT.md) repeats the point.

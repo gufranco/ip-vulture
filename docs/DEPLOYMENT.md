@@ -88,6 +88,6 @@ Serve the panel over TLS. HTTP Basic sends the password base64-encoded on every 
 | Admin | Disabled, or enabled with credentials from a secret store and TLS in front |
 | Alerting | SMTP credentials from a secret store, `ALERT_POLICY` set to what you actually want mail about |
 | Geolocation | Left off unless you have a reason, since it sends caller addresses to a third party |
-| Disclosure | `SIMULATION_DISCLOSURE` left at `both` unless a closed-loop test needs byte-exact output |
+| Disclosure | `SIMULATION_DISCLOSURE` is `off` by default, so responses carry no simulation marker. Set it to `both` if the deployment should announce itself |
 | Logging | Driver set to `none`, or the disk consequence accepted deliberately |
 | Feeds | Reachable from the deployment, or `FEEDS_ENABLED=false` |

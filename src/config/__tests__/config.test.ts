@@ -17,7 +17,7 @@ describe("loadConfig defaults", () => {
     expect(config.port).toBe(3000);
     expect(config.host).toBe("0.0.0.0");
     expect(config.trustProxy).toBe(false);
-    expect(config.disclosure).toBe("both");
+    expect(config.disclosure).toBe("off");
     expect(config.simulation).toEqual({ mode: "fixed", id: "apache" });
   });
 
@@ -25,6 +25,15 @@ describe("loadConfig defaults", () => {
     const config = loadConfig({}, options);
 
     expect(config.geo.enabled).toBe(false);
+  });
+
+  it("should let the operator opt into the disclosure marker", () => {
+    expect(
+      loadConfig({ SIMULATION_DISCLOSURE: "both" }, options).disclosure,
+    ).toBe("both");
+    expect(
+      loadConfig({ SIMULATION_DISCLOSURE: "header" }, options).disclosure,
+    ).toBe("header");
   });
 
   it("should return a frozen object", () => {
