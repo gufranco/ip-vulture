@@ -8,9 +8,11 @@ import fastify, {
 import type { Config } from "./config/config.js";
 import { Classification, createClassifier } from "./defense/classify.js";
 import type { Geolocation } from "./geo/lookup.js";
+import { emitResponse } from "./http/emit.js";
 import type { AccessLog, AccessRecord } from "./monitoring/accessLog.js";
 import { createIpSet, EMPTY_IP_SET, type IpSet } from "./net/ipset.js";
 import { adminRoutes } from "./routes/admin.js";
+import type { ProtocolProfile } from "./simulations/protocol.js";
 import { pathOf, renderSimulation } from "./simulations/render.js";
 import {
   type Simulation,
@@ -19,7 +21,6 @@ import {
 
 const MAX_PARAM_LENGTH = 65_536;
 const RATE_LIMITED_STATUS = 503;
-const INTERNAL_SIMULATION_HEADER = "x-ip-vulture-simulation";
 
 const RATE_LIMIT_HEADERS = Object.freeze({
   "x-ratelimit-limit": false,
@@ -80,7 +81,78 @@ function toSupportedStatus(statusCode: number): number {
 function buildApp(options: AppOptions): FastifyInstance {
   const { accessLog, config, selectSimulation } = options;
 
+  function clientErrorResponse(
+    profile: ProtocolProfile,
+    code: string,
+    message: string,
+  ): { readonly statusCode: number; readonly withAllow: boolean } {
+    const unrecognizedMethod =
+      code === "HPE_INVALID_METHOD" && message.includes("Invalid method");
+
+    if (unrecognizedMethod) {
+      return { statusCode: profile.unknownMethodStatus, withAllow: true };
+    }
+
+    if (code === "HPE_INVALID_VERSION") {
+      return { statusCode: profile.badVersionStatus, withAllow: false };
+    }
+
+    return { statusCode: 400, withAllow: false };
+  }
+
   const app = fastify({
+    clientErrorHandler: (error, socket) => {
+      const simulation = selectSimulation();
+      const profile = simulation.protocol;
+      const code = String((error as { readonly code?: unknown }).code ?? "");
+      const { statusCode, withAllow } = clientErrorResponse(
+        profile,
+        code,
+        error.message,
+      );
+
+      const context = {
+        path: "/",
+        method: "GET",
+        statusCode,
+        host: "localhost",
+        now: new Date(),
+      };
+
+      const declared = simulation.headers(context);
+      const { Server: serverHeader, ...rest } = declared;
+      const body = Buffer.from(simulation.render(context), "latin1");
+
+      emitResponse(
+        {
+          writeHead: (status, reason, headers) => {
+            const lines = [`HTTP/1.1 ${String(status)} ${reason}`];
+            const pairs = headers
+              .filter((_value, index) => index % 2 === 0)
+              .map((name, pair) => `${name}: ${headers[pair * 2 + 1] ?? ""}`);
+
+            socket.write(`${[...lines, ...pairs].join("\r\n")}\r\n\r\n`);
+
+            return undefined;
+          },
+          end: (payload: Buffer) => {
+            socket.end(payload);
+
+            return undefined;
+          },
+        },
+        {
+          profile,
+          statusCode,
+          headers: rest,
+          body,
+          keepAlive: false,
+          serverHeader: serverHeader ?? "",
+          now: new Date(),
+          ...(withAllow ? { extraHeaders: { Allow: profile.allow } } : {}),
+        },
+      );
+    },
     logger:
       options.logger === true
         ? {
@@ -130,6 +202,7 @@ function buildApp(options: AppOptions): FastifyInstance {
     request: FastifyRequest,
     reply: FastifyReply,
     statusCode: number,
+    extraHeaders?: Readonly<Record<string, string>>,
   ): FastifyReply {
     const simulation = selectSimulation();
     const rendered = renderSimulation({
@@ -143,13 +216,28 @@ function buildApp(options: AppOptions): FastifyInstance {
       },
     });
 
-    const body = request.method === "HEAD" ? Buffer.alloc(0) : rendered.body;
+    const keepAlive =
+      request.raw.httpVersion === "1.1" &&
+      String(request.headers.connection ?? "").toLowerCase() !== "close";
 
-    return reply
-      .status(rendered.statusCode)
-      .headers(rendered.headers)
-      .header(INTERNAL_SIMULATION_HEADER, simulation.id)
-      .send(body);
+    const { Server: serverHeader, ...rest } = rendered.headers;
+
+    reply.hijack();
+    emitResponse(reply.raw, {
+      profile: simulation.protocol,
+      statusCode: rendered.statusCode,
+      headers: rest,
+      body: rendered.body,
+      keepAlive,
+      serverHeader: serverHeader ?? "",
+      now: new Date(),
+      ...(request.method === "HEAD" ? { omitBody: true } : {}),
+      ...(extraHeaders === undefined ? {} : { extraHeaders }),
+    });
+
+    recordAccess(request, reply, rendered.statusCode, simulation.id);
+
+    return reply;
   }
 
   app.setNotFoundHandler((request, reply) => respond(request, reply, 404));
@@ -175,15 +263,14 @@ function buildApp(options: AppOptions): FastifyInstance {
     options.onRequestAddress?.(request.ip);
   });
 
-  app.addHook("onSend", async (request, reply, payload) => {
-    const simulationId = String(
-      reply.getHeader(INTERNAL_SIMULATION_HEADER) ?? "",
-    );
-
-    reply.removeHeader(INTERNAL_SIMULATION_HEADER);
-
+  function recordAccess(
+    request: FastifyRequest,
+    reply: FastifyReply,
+    statusCode: number,
+    simulationId: string,
+  ): void {
     if (accessLog === undefined || isOperatorPath(request.url)) {
-      return payload;
+      return;
     }
 
     const classification = classify({
@@ -197,14 +284,14 @@ function buildApp(options: AppOptions): FastifyInstance {
     if (!recordPolicy.has(classification)) {
       accessLog.suppress();
 
-      return payload;
+      return;
     }
 
     const entry = {
       timestamp: new Date().toISOString(),
       method: request.method,
       path: pathOf(request.url),
-      statusCode: reply.statusCode,
+      statusCode,
       ip: request.ip,
       userAgent: headerOf(request, "user-agent"),
       referer: headerOf(request, "referer"),
@@ -224,9 +311,7 @@ function buildApp(options: AppOptions): FastifyInstance {
     ) {
       options.alerts.enqueue(entry);
     }
-
-    return payload;
-  });
+  }
 
   app.register(rateLimit, {
     global: true,

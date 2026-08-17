@@ -1,3 +1,5 @@
+import { once } from "node:events";
+import { createServer, type Server } from "node:net";
 import { faker } from "@faker-js/faker";
 import { describe, expect, it, vi } from "vitest";
 import { createAlerter } from "../alerts/digest.js";
@@ -425,5 +427,130 @@ describe("bootstrap alert delivery", () => {
 
     started.stop();
     await started.app.close();
+  });
+});
+
+describe("bootstrap geolocation failure reporting", () => {
+  it("should log through the geolocation failure callback", async () => {
+    const logger = silentLogger();
+    const fetcher = vi
+      .fn()
+      .mockResolvedValue(new Response("nope", { status: 503 }));
+
+    const started = await bootstrap({
+      env: {
+        FEEDS_ENABLED: "false",
+        GEO_ENABLED: "true",
+        TRUST_PROXY: "true",
+      },
+      logger,
+      fetcher: fetcher as unknown as typeof fetch,
+    });
+
+    await started.app.inject({
+      method: "GET",
+      url: "/x",
+      headers: { "x-forwarded-for": "8.8.8.8" },
+    });
+
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.objectContaining({ reason: expect.stringContaining("503") }),
+      "geolocation lookup failed",
+    );
+
+    started.stop();
+    await started.app.close();
+  });
+});
+
+describe("bootstrap end to end alert delivery", () => {
+  let smtp: Server | undefined;
+
+  async function startSmtp(): Promise<{ port: number; received: string[] }> {
+    const received: string[] = [];
+
+    const server = createServer((socket) => {
+      socket.setEncoding("utf8");
+      socket.write("220 local ready\r\n");
+      let inData = false;
+
+      socket.on("data", (chunk: string) => {
+        received.push(chunk);
+
+        for (const line of chunk.split("\r\n").filter((l) => l.length > 0)) {
+          if (inData) {
+            if (line === ".") {
+              inData = false;
+              socket.write("250 queued\r\n");
+            }
+            continue;
+          }
+
+          const verb = line.slice(0, 4).toUpperCase().trim();
+
+          if (verb === "DATA") {
+            inData = true;
+            socket.write("354 go\r\n");
+          } else if (verb === "EHLO") {
+            socket.write("250 local\r\n");
+          } else if (verb === "QUIT") {
+            socket.write("221 bye\r\n");
+          } else {
+            socket.write("250 ok\r\n");
+          }
+        }
+      });
+    });
+
+    server.listen(0, "127.0.0.1");
+    await once(server, "listening");
+    smtp = server;
+
+    const address = server.address();
+
+    if (address === null || typeof address === "string") {
+      throw new Error("failed to bind the test SMTP server");
+    }
+
+    return { port: address.port, received };
+  }
+
+  it("should deliver a digest through a real SMTP conversation", async () => {
+    const { port, received } = await startSmtp();
+
+    const started = await bootstrap({
+      env: {
+        FEEDS_ENABLED: "false",
+        ALERT_ENABLED: "true",
+        ALERT_WINDOW_SECONDS: "0",
+        ALERT_FROM: "alerts@example.invalid",
+        ALERT_TO: "ops@example.invalid",
+        SMTP_HOST: "127.0.0.1",
+        SMTP_PORT: String(port),
+        ALERT_POLICY: "bot",
+        RECORD_POLICY: "bot",
+      },
+      logger: silentLogger(),
+    });
+
+    await started.app.inject({
+      method: "GET",
+      url: "/watched-path",
+      headers: { "user-agent": "curl/8.7.1", accept: "*/*" },
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 600));
+
+    const session = received.join("");
+
+    expect(session).toContain("MAIL FROM:<alerts@example.invalid>");
+    expect(session).toContain("RCPT TO:<ops@example.invalid>");
+    expect(session).toContain("/watched-path");
+    expect(session).toContain("lost when the process exits");
+
+    started.stop();
+    await started.app.close();
+    smtp?.close();
+    smtp = undefined;
   });
 });
