@@ -36,7 +36,7 @@ x-simulated-response: ip-vulture; simulated-response
 content-length: 406
 ```
 
-Byte-faithful down to the charset an Apache of that version actually declared. The one header a real Apache would not send is the disclosure marker, which is [deliberate and configurable](#the-disclosure-marker).
+Byte-faithful down to the charset, the header order, and the casing an Apache of that version actually emits. Verified against a real `httpd` container, not written from memory.
 
 ## What this is for
 
@@ -212,7 +212,7 @@ SERVER_TEMPLATE=random SIMULATION_GENRE=creative
 
 ## The disclosure marker
 
-Every simulated response carries `X-Simulated-Response: ip-vulture; simulated-response`, and every HTML body carries a trailing comment saying the same thing. This is on by default and controlled by `SIMULATION_DISCLOSURE`.
+Responses can carry `X-Simulated-Response: ip-vulture; simulated-response`, and HTML bodies a trailing comment saying the same thing. This is **off by default** so responses stay byte-faithful, and is controlled by `SIMULATION_DISCLOSURE`.
 
 | Value | Behavior |
 |:------|:---------|
@@ -223,8 +223,8 @@ Every simulated response carries `X-Simulated-Response: ip-vulture; simulated-re
 
 The marker exists so a simulated response is never mistaken for a real one by whoever finds it. It also costs byte-exact fidelity, which is the whole tension: a real Apache does not send that header.
 
-> [!CAUTION]
-> `off` is for closed-loop tests that assert byte-exact vendor output. Turning it off removes the only machine-readable signal that the response is simulated, on a server whose entire purpose is to look like something it is not. That is your call to make deliberately.
+> [!IMPORTANT]
+> The default is `off`, so nothing in the response marks it as simulated. That is what makes the output byte-faithful, and it is the right default for testing a client against realistic server behavior. It also means anyone who finds the server has no machine-readable signal that it is a simulation. Run it only on infrastructure you own or are authorized to test, and set `SIMULATION_DISCLOSURE=both` when you want the marker back.
 
 ## Access monitoring
 
@@ -313,7 +313,7 @@ This is the one outbound flow that carries information about your callers, which
 | `TRUST_PROXY` | `false` | `false`, a hop count, or a CIDR list. Must match your real topology |
 | `SERVER_TEMPLATE` | `apache` | A simulation id, or `random` |
 | `RANDOM_SCOPE` | `startup` | `startup` or `request` |
-| `SIMULATION_DISCLOSURE` | `both` | `header`, `comment`, `both`, or `off` |
+| `SIMULATION_DISCLOSURE` | `off` | `header`, `comment`, `both`, or `off` |
 | `ACCESS_LOG_CAPACITY` | `1000` | Ring buffer size |
 | `RECORD_POLICY` | `human,bot,scanner` | Which classifications are stored |
 | `ALERT_POLICY` | `human` | Which classifications are e-mailed |
@@ -386,10 +386,10 @@ No. The access history is a ring buffer in memory and dies with the process. The
 </details>
 
 <details>
-<summary><strong>Why does the response carry an extra header?</strong></summary>
+<summary><strong>Does the response carry anything marking it as simulated?</strong></summary>
 <br>
 
-`X-Simulated-Response` marks the response as a simulation so it is never mistaken for a real server. It is configurable through `SIMULATION_DISCLOSURE`, including `off`. See [The disclosure marker](#the-disclosure-marker).
+It does not, by default. `SIMULATION_DISCLOSURE` is `off` so responses match the real server byte for byte. Set it to `both` when you want every response marked as a simulation. See [The disclosure marker](#the-disclosure-marker).
 
 </details>
 

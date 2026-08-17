@@ -29,7 +29,7 @@ This project simulates HTTP server error responses and records access metadata i
 
 The project's purpose is to return responses that resemble other servers, so the following are working as designed rather than vulnerabilities:
 
-- The server misrepresents its identity through the `Server` header and response body. That is the feature. Every response carries `X-Simulated-Response` by default, and disabling that marker is a documented operator choice.
+- The server misrepresents its identity through the status line, header order, header casing, `Server` header, and response body. That is the feature, and since `SIMULATION_DISCLOSURE` defaults to `off`, responses carry no marker identifying them as simulated. Setting it to `both` restores the marker.
 - The admin path is not registered when disabled, so probing it returns the ordinary simulated page. That indistinguishability is intended.
 - Reports that the tool can be pointed at infrastructure the operator does not own. That is a misuse question, not a defect. See the intended-use section of the [README](README.md).
 
