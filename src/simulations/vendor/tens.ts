@@ -1,5 +1,12 @@
 import { escapeHtml } from "../escape.js";
 import {
+  APACHE_PROTOCOL,
+  IIS_PROTOCOL,
+  MINIMAL_PROTOCOL,
+  NGINX_PROTOCOL,
+  TOMCAT_PROTOCOL,
+} from "../protocol.js";
+import {
   Era,
   Genre,
   type RenderContext,
@@ -61,6 +68,7 @@ const apache24: Simulation = {
   era: Era.Tens,
   genre: Genre.Vendor,
   statusCodes: SUPPORTED_STATUS_CODES,
+  protocol: APACHE_PROTOCOL,
 
   headers(): Readonly<Record<string, string>> {
     return Object.freeze({
@@ -93,6 +101,7 @@ const nginx1: Simulation = {
   era: Era.Tens,
   genre: Genre.Vendor,
   statusCodes: SUPPORTED_STATUS_CODES,
+  protocol: NGINX_PROTOCOL,
 
   headers(): Readonly<Record<string, string>> {
     return Object.freeze({
@@ -112,6 +121,7 @@ const openresty: Simulation = {
   era: Era.Tens,
   genre: Genre.Vendor,
   statusCodes: SUPPORTED_STATUS_CODES,
+  protocol: NGINX_PROTOCOL,
 
   headers(): Readonly<Record<string, string>> {
     return Object.freeze({
@@ -143,6 +153,7 @@ const iis10: Simulation = {
   era: Era.Tens,
   genre: Genre.Vendor,
   statusCodes: SUPPORTED_STATUS_CODES,
+  protocol: IIS_PROTOCOL,
 
   headers(): Readonly<Record<string, string>> {
     return Object.freeze({
@@ -177,6 +188,7 @@ const tomcat10: Simulation = {
   era: Era.Tens,
   genre: Genre.Vendor,
   statusCodes: SUPPORTED_STATUS_CODES,
+  protocol: TOMCAT_PROTOCOL,
 
   headers(): Readonly<Record<string, string>> {
     return Object.freeze({
@@ -197,6 +209,7 @@ const lighttpd: Simulation = {
   era: Era.Tens,
   genre: Genre.Vendor,
   statusCodes: SUPPORTED_STATUS_CODES,
+  protocol: MINIMAL_PROTOCOL,
 
   headers(): Readonly<Record<string, string>> {
     return Object.freeze({
@@ -229,6 +242,7 @@ const litespeed: Simulation = {
   era: Era.Tens,
   genre: Genre.Vendor,
   statusCodes: SUPPORTED_STATUS_CODES,
+  protocol: MINIMAL_PROTOCOL,
 
   headers(): Readonly<Record<string, string>> {
     return Object.freeze({

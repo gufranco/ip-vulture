@@ -1,5 +1,10 @@
 import { escapeHtml } from "../escape.js";
 import {
+  APACHE_PROTOCOL,
+  IIS_PROTOCOL,
+  MINIMAL_PROTOCOL,
+} from "../protocol.js";
+import {
   Era,
   Genre,
   type RenderContext,
@@ -14,6 +19,7 @@ const ncsaHttpd: Simulation = {
   era: Era.Nineties,
   genre: Genre.Vendor,
   statusCodes: SUPPORTED_STATUS_CODES,
+  protocol: APACHE_PROTOCOL,
 
   headers(): Readonly<Record<string, string>> {
     return Object.freeze({
@@ -40,6 +46,7 @@ const cernHttpd: Simulation = {
   era: Era.Nineties,
   genre: Genre.Vendor,
   statusCodes: SUPPORTED_STATUS_CODES,
+  protocol: APACHE_PROTOCOL,
 
   headers(): Readonly<Record<string, string>> {
     return Object.freeze({
@@ -67,6 +74,7 @@ const apache13: Simulation = {
   era: Era.Nineties,
   genre: Genre.Vendor,
   statusCodes: SUPPORTED_STATUS_CODES,
+  protocol: APACHE_PROTOCOL,
 
   headers(): Readonly<Record<string, string>> {
     return Object.freeze({
@@ -99,6 +107,7 @@ const iis4: Simulation = {
   era: Era.Nineties,
   genre: Genre.Vendor,
   statusCodes: SUPPORTED_STATUS_CODES,
+  protocol: IIS_PROTOCOL,
 
   headers(): Readonly<Record<string, string>> {
     return Object.freeze({
@@ -127,6 +136,7 @@ const netscapeEnterprise: Simulation = {
   era: Era.Nineties,
   genre: Genre.Vendor,
   statusCodes: SUPPORTED_STATUS_CODES,
+  protocol: MINIMAL_PROTOCOL,
 
   headers(): Readonly<Record<string, string>> {
     return Object.freeze({
