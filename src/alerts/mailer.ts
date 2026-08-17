@@ -2,6 +2,7 @@ import { connect as netConnect } from "node:net";
 import type { Duplex } from "node:stream";
 import { connect as tlsConnect } from "node:tls";
 import type { SmtpConfig } from "../config/config.js";
+import { parseAddress } from "../net/address.js";
 
 const CRLF = "\r\n";
 
@@ -57,7 +58,13 @@ function formatMessage(options: FormatOptions): string {
 function defaultConnect(smtp: SmtpConfig): Promise<Duplex> {
   return new Promise((resolve, reject) => {
     const socket = smtp.secure
-      ? tlsConnect({ host: smtp.host, port: smtp.port, servername: smtp.host })
+      ? tlsConnect({
+          host: smtp.host,
+          port: smtp.port,
+          ...(parseAddress(smtp.host) === undefined
+            ? { servername: smtp.host }
+            : {}),
+        })
       : netConnect({ host: smtp.host, port: smtp.port });
 
     const onError = (error: Error) => reject(error);
