@@ -1,4 +1,9 @@
 import {
+  CADDY_PROTOCOL,
+  MINIMAL_PROTOCOL,
+  TRAEFIK_PROTOCOL,
+} from "../protocol.js";
+import {
   Era,
   Genre,
   type RenderContext,
@@ -13,6 +18,7 @@ const caddy: Simulation = {
   era: Era.Twenties,
   genre: Genre.Vendor,
   statusCodes: SUPPORTED_STATUS_CODES,
+  protocol: CADDY_PROTOCOL,
 
   headers(): Readonly<Record<string, string>> {
     return Object.freeze({
@@ -31,6 +37,7 @@ const traefik: Simulation = {
   era: Era.Twenties,
   genre: Genre.Vendor,
   statusCodes: SUPPORTED_STATUS_CODES,
+  protocol: TRAEFIK_PROTOCOL,
 
   headers(): Readonly<Record<string, string>> {
     return Object.freeze({
@@ -54,6 +61,7 @@ const haproxy: Simulation = {
   era: Era.Twenties,
   genre: Genre.Vendor,
   statusCodes: SUPPORTED_STATUS_CODES,
+  protocol: MINIMAL_PROTOCOL,
 
   headers(): Readonly<Record<string, string>> {
     return Object.freeze({
@@ -76,6 +84,7 @@ const envoy: Simulation = {
   era: Era.Twenties,
   genre: Genre.Vendor,
   statusCodes: SUPPORTED_STATUS_CODES,
+  protocol: MINIMAL_PROTOCOL,
 
   headers(): Readonly<Record<string, string>> {
     return Object.freeze({

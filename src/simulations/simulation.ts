@@ -1,3 +1,5 @@
+import type { ProtocolProfile } from "./protocol.js";
+
 enum Era {
   Nineties = "1990s",
   Thousands = "2000s",
@@ -54,6 +56,7 @@ interface Simulation {
   readonly era: Era;
   readonly genre: Genre;
   readonly statusCodes: readonly number[];
+  readonly protocol: ProtocolProfile;
   headers(context: RenderContext): Readonly<Record<string, string>>;
   render(context: RenderContext): string;
 }

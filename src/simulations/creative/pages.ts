@@ -1,4 +1,5 @@
 import { escapeHtml } from "../escape.js";
+import { APACHE_PROTOCOL } from "../protocol.js";
 import {
   Era,
   Genre,
@@ -25,6 +26,7 @@ const constructionZone: Simulation = {
   era: Era.Thousands,
   genre: Genre.Creative,
   statusCodes: SUPPORTED_STATUS_CODES,
+  protocol: APACHE_PROTOCOL,
 
   headers(): Readonly<Record<string, string>> {
     return htmlHeaders;
@@ -72,6 +74,7 @@ const lostInSpace: Simulation = {
   era: Era.Thousands,
   genre: Genre.Creative,
   statusCodes: SUPPORTED_STATUS_CODES,
+  protocol: APACHE_PROTOCOL,
 
   headers(): Readonly<Record<string, string>> {
     return htmlHeaders;
@@ -120,6 +123,7 @@ const webringHub: Simulation = {
   era: Era.Thousands,
   genre: Genre.Creative,
   statusCodes: SUPPORTED_STATUS_CODES,
+  protocol: APACHE_PROTOCOL,
 
   headers(): Readonly<Record<string, string>> {
     return htmlHeaders;
@@ -167,6 +171,7 @@ const cyberCafe: Simulation = {
   era: Era.Thousands,
   genre: Genre.Creative,
   statusCodes: SUPPORTED_STATUS_CODES,
+  protocol: APACHE_PROTOCOL,
 
   headers(): Readonly<Record<string, string>> {
     return htmlHeaders;

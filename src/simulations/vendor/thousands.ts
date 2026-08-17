@@ -1,5 +1,11 @@
 import { escapeHtml } from "../escape.js";
 import {
+  APACHE_PROTOCOL,
+  IIS_PROTOCOL,
+  MINIMAL_PROTOCOL,
+  NGINX_PROTOCOL,
+} from "../protocol.js";
+import {
   Era,
   Genre,
   type RenderContext,
@@ -14,6 +20,7 @@ const apache20: Simulation = {
   era: Era.Thousands,
   genre: Genre.Vendor,
   statusCodes: SUPPORTED_STATUS_CODES,
+  protocol: APACHE_PROTOCOL,
 
   headers(): Readonly<Record<string, string>> {
     return Object.freeze({
@@ -47,6 +54,7 @@ const iis6: Simulation = {
   era: Era.Thousands,
   genre: Genre.Vendor,
   statusCodes: SUPPORTED_STATUS_CODES,
+  protocol: IIS_PROTOCOL,
 
   headers(): Readonly<Record<string, string>> {
     return Object.freeze({
@@ -80,6 +88,7 @@ const nginx07: Simulation = {
   era: Era.Thousands,
   genre: Genre.Vendor,
   statusCodes: SUPPORTED_STATUS_CODES,
+  protocol: NGINX_PROTOCOL,
 
   headers(): Readonly<Record<string, string>> {
     return Object.freeze({
@@ -108,6 +117,7 @@ const zeus: Simulation = {
   era: Era.Thousands,
   genre: Genre.Vendor,
   statusCodes: SUPPORTED_STATUS_CODES,
+  protocol: MINIMAL_PROTOCOL,
 
   headers(): Readonly<Record<string, string>> {
     return Object.freeze({
