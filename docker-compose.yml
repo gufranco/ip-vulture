@@ -1,0 +1,29 @@
+services:
+  ip-vulture:
+    build: .
+    image: ip-vulture:local
+    read_only: true
+    tmpfs:
+      - /tmp
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      HOST: 0.0.0.0
+      PORT: "3000"
+      TRUST_PROXY: "1"
+      SERVER_TEMPLATE: "${SERVER_TEMPLATE:-random}"
+      RANDOM_SCOPE: "${RANDOM_SCOPE:-request}"
+      SIMULATION_DISCLOSURE: "${SIMULATION_DISCLOSURE:-both}"
+      FEEDS_ENABLED: "${FEEDS_ENABLED:-true}"
+      GEO_ENABLED: "${GEO_ENABLED:-false}"
+      ADMIN_ENABLED: "${ADMIN_ENABLED:-false}"
+      ADMIN_USER: "${ADMIN_USER:-}"
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD:-}"
+      ALERT_ENABLED: "${ALERT_ENABLED:-false}"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    logging:
+      driver: "${LOG_DRIVER:-none}"
+    restart: unless-stopped
