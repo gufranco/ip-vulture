@@ -2,3 +2,7 @@ node_modules
 .env
 *.log
 coverage
+
+# A vendor/ rule is common in machine-global ignore files. This directory
+# holds source, not vendored dependencies, so re-include it explicitly.
+!src/simulations/vendor/
