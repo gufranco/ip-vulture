@@ -1,17 +1,17 @@
-FROM node:24-slim AS deps
+FROM node:26-slim AS deps
 
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
 
 WORKDIR /app
 
-RUN corepack enable
+RUN npm install --global corepack@latest && corepack enable
 
 COPY package.json pnpm-lock.yaml ./
 
 RUN pnpm install --frozen-lockfile --prod=false --ignore-scripts
 
-FROM node:24-slim AS runtime
+FROM node:26-slim AS runtime
 
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
