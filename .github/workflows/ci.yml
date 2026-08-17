@@ -76,7 +76,43 @@ jobs:
           done
           curl -fsS http://127.0.0.1:3000/__health
           docker exec ip-vulture-ci id -u | grep -qv '^0$'
-          docker rm -f ip-vulture-ci
+          docker exec ip-vulture-ci node --version
+
+      - name: Prove the wire shape survives inside the image
+        run: |
+          set -euo pipefail
+          HEAD=$(python3 - <<'PROBE'
+          import socket
+
+          sock = socket.create_connection(("127.0.0.1", 3000), timeout=5)
+          sock.sendall(b"GET /missing HTTP/1.1\r\nHost: h\r\n\r\n")
+          data = b""
+          while b"\r\n\r\n" not in data:
+              chunk = sock.recv(4096)
+              if not chunk:
+                  break
+              data += chunk
+          head = data.split(b"\r\n\r\n")[0].decode("latin1")
+          print(head.replace("\r\n", "\n"))
+          PROBE
+          )
+          printf '%s\n' "$HEAD"
+
+          printf '%s\n' "$HEAD" | sed -n '1p' | grep -qx 'HTTP/1.1 404 Not Found'
+          printf '%s\n' "$HEAD" | sed -n '2p' | grep -q '^Date: '
+          printf '%s\n' "$HEAD" | sed -n '3p' | grep -q '^Server: Apache'
+          printf '%s\n' "$HEAD" | sed -n '4p' | grep -q '^Content-Length: '
+          printf '%s\n' "$HEAD" | sed -n '5p' \
+            | grep -qx 'Content-Type: text/html; charset=iso-8859-1'
+
+          if printf '%s\n' "$HEAD" | grep -qiE '^(connection|keep-alive|x-ratelimit)'; then
+            echo "the image leaked a framework header" >&2
+            exit 1
+          fi
+
+      - name: Stop the container
+        if: always()
+        run: docker rm --force ip-vulture-ci
 
   release:
     name: release
