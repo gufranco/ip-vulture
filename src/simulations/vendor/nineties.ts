@@ -12,6 +12,7 @@ import {
   SUPPORTED_STATUS_CODES,
   statusText,
 } from "../simulation.js";
+import { renderNamedView } from "../views/index.js";
 
 const ncsaHttpd: Simulation = {
   id: "ncsa-httpd",
@@ -29,14 +30,11 @@ const ncsaHttpd: Simulation = {
   },
 
   render(context: RenderContext): string {
-    return `<HEAD><TITLE>${context.statusCode} ${statusText(context.statusCode)}</TITLE></HEAD>
-<BODY>
-<H1>${statusText(context.statusCode)}</H1>
-The requested object ${escapeHtml(context.path)} was not found on this server.
-The link you followed is either outdated, inaccurate, or the server has been
-instructed not to let you have it.<P>
-</BODY>
-`;
+    return renderNamedView("ncsa-httpd", {
+      statusCode: context.statusCode,
+      statusText: statusText(context.statusCode),
+      path: context.path,
+    });
   },
 };
 
@@ -56,15 +54,11 @@ const cernHttpd: Simulation = {
   },
 
   render(context: RenderContext): string {
-    return `<HEAD><TITLE>Error ${context.statusCode}</TITLE></HEAD>
-<BODY>
-<H1>Error ${context.statusCode}</H1>
-<P>Unable to access document ${escapeHtml(context.path)}
-<P>Reason: ${statusText(context.statusCode)}
-<HR>
-<ADDRESS>CERN-HTTPD/3.0A</ADDRESS>
-</BODY>
-`;
+    return renderNamedView("cern-httpd", {
+      statusCode: context.statusCode,
+      statusText: statusText(context.statusCode),
+      path: context.path,
+    });
   },
 };
 
@@ -89,15 +83,12 @@ const apache13: Simulation = {
         ? `The requested URL ${escapeHtml(context.path)} was not found on this server.`
         : "The server encountered an error while processing your request.";
 
-    return `<HTML><HEAD>
-<TITLE>${context.statusCode} ${statusText(context.statusCode)}</TITLE>
-</HEAD><BODY>
-<H1>${statusText(context.statusCode)}</H1>
-${detail}<P>
-<HR>
-<ADDRESS>Apache/1.3.42 Server at ${escapeHtml(context.host)} Port 80</ADDRESS>
-</BODY></HTML>
-`;
+    return renderNamedView("apache-1.3", {
+      statusCode: context.statusCode,
+      statusText: statusText(context.statusCode),
+      detail,
+      host: context.host,
+    });
   },
 };
 
@@ -117,16 +108,10 @@ const iis4: Simulation = {
   },
 
   render(context: RenderContext): string {
-    return `<html><head><title>Error ${context.statusCode}</title></head>
-<body>
-<h2>HTTP ${context.statusCode} - ${statusText(context.statusCode)}</h2>
-<p>The Web server cannot find the file or script you asked for. Please check the
-URL to ensure that the path is correct.</p>
-<hr>
-<p>Please contact the server's administrator if this problem persists.</p>
-<p><i>Internet Information Server</i></p>
-</body></html>
-`;
+    return renderNamedView("iis-4", {
+      statusCode: context.statusCode,
+      statusText: statusText(context.statusCode),
+    });
   },
 };
 
@@ -146,15 +131,10 @@ const netscapeEnterprise: Simulation = {
   },
 
   render(context: RenderContext): string {
-    return `<HTML><HEAD><TITLE>${statusText(context.statusCode)}</TITLE></HEAD>
-<BODY>
-<H1>${statusText(context.statusCode)}</H1>
-The server cannot find the file ${escapeHtml(context.path)}.
-<P>
-<HR>
-<ADDRESS>Netscape-Enterprise/3.6</ADDRESS>
-</BODY></HTML>
-`;
+    return renderNamedView("netscape-enterprise", {
+      statusText: statusText(context.statusCode),
+      path: context.path,
+    });
   },
 };
 

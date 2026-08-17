@@ -11,6 +11,7 @@ import {
   SUPPORTED_STATUS_CODES,
   statusText,
 } from "../simulation.js";
+import { renderNamedView } from "../views/index.js";
 
 const caddy: Simulation = {
   id: "caddy",
@@ -51,7 +52,10 @@ const traefik: Simulation = {
       return "404 page not found\n";
     }
 
-    return `${context.statusCode} ${statusText(context.statusCode)}\n`;
+    return renderNamedView("traefik", {
+      statusCode: context.statusCode,
+      statusText: statusText(context.statusCode),
+    });
   },
 };
 
@@ -71,10 +75,10 @@ const haproxy: Simulation = {
   },
 
   render(context: RenderContext): string {
-    return `<html><body><h1>${context.statusCode} ${statusText(context.statusCode)}</h1>
-No server is available to handle this request.
-</body></html>
-`;
+    return renderNamedView("haproxy", {
+      statusCode: context.statusCode,
+      statusText: statusText(context.statusCode),
+    });
   },
 };
 
@@ -106,7 +110,9 @@ const envoy: Simulation = {
       return "upstream request timeout";
     }
 
-    return `${statusText(context.statusCode)}`;
+    return renderNamedView("envoy", {
+      statusText: statusText(context.statusCode),
+    });
   },
 };
 
