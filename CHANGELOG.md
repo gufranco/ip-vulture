@@ -1,5 +1,17 @@
 # Changelog
 
+# [1.1.0](https://github.com/gufranco/ip-vulture/compare/v1.0.0...v1.1.0) (2026-08-17)
+
+
+### Bug Fixes
+
+* **http:** emit responses byte-for-byte like the simulated server ([f77ba22](https://github.com/gufranco/ip-vulture/commit/f77ba220f160be8170f017b3504b2a1c42a54770))
+
+
+### Features
+
+* **simulations:** give every simulation a measured protocol profile ([accf2aa](https://github.com/gufranco/ip-vulture/commit/accf2aa25861a7bb94d14ccf8007f3746531122b))
+
 # 1.0.0 (2026-08-17)
 
 
