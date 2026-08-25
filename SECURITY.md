@@ -35,7 +35,7 @@ The project's purpose is to return responses that resemble other servers, so the
 
 ## Operating it safely
 
-- Set `TRUST_PROXY` to match your real topology. Leaving it at `true` on a public deployment lets any caller choose the address you record for them.
+- Set `TRUST_PROXY` to match your real topology. Leaving it at `true` on a public deployment lets any caller choose the address you record for them. An integer hop count is refused at startup, because it cannot validate the immediate peer.
 - Serve the admin panel over TLS. HTTP Basic sends the password base64-encoded on every request.
 - Keep credentials in a secret store, never in a committed `.env`.
 - Leave `GEO_ENABLED` off unless you have a reason. It is the only feature that sends caller addresses to a third party.

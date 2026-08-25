@@ -10,7 +10,7 @@ services:
     environment:
       HOST: 0.0.0.0
       PORT: "3000"
-      TRUST_PROXY: "1"
+      TRUST_PROXY: "${TRUST_PROXY:-false}"
       SERVER_TEMPLATE: "${SERVER_TEMPLATE:-random}"
       RANDOM_SCOPE: "${RANDOM_SCOPE:-request}"
       SIMULATION_DISCLOSURE: "${SIMULATION_DISCLOSURE:-off}"

@@ -96,8 +96,10 @@ describe("loadConfig trust proxy", () => {
     expect(loadConfig({ TRUST_PROXY: "true" }, options).trustProxy).toBe(true);
   });
 
-  it("should accept a hop count", () => {
-    expect(loadConfig({ TRUST_PROXY: "1" }, options).trustProxy).toBe(1);
+  it("should reject a hop count", () => {
+    expect(() => loadConfig({ TRUST_PROXY: "1" }, options)).toThrow(
+      /TRUST_PROXY/,
+    );
   });
 
   it("should accept a CIDR list", () => {
