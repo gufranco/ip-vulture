@@ -1,5 +1,19 @@
 # Changelog
 
+# [2.0.0](https://github.com/gufranco/ip-vulture/compare/v1.1.2...v2.0.0) (2026-08-25)
+
+
+* fix(config)!: record the TRUST_PROXY removal as a breaking change ([7bcae87](https://github.com/gufranco/ip-vulture/commit/7bcae87a2bbdaaa7073349362bdfc15dced18a0e))
+
+
+### BREAKING CHANGES
+
+* TRUST_PROXY no longer accepts an integer hop count. Fastify
+5.12.1 ignores a numeric trustProxy and trusts no peer at all, so the value
+was silently recording the proxy's own address for every caller. Set
+TRUST_PROXY to the address or CIDR of the proxy instead, for example
+TRUST_PROXY=127.0.0.1 for a local tunnel.
+
 ## [1.1.2](https://github.com/gufranco/ip-vulture/compare/v1.1.1...v1.1.2) (2026-08-25)
 
 
