@@ -1,6 +1,6 @@
 {
   "name": "ip-vulture",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Captures incoming request IPs and resolves geolocation via ip-api.com",
   "type": "module",
   "packageManager": "pnpm@10.30.3",
