@@ -168,7 +168,10 @@ function buildApp(options: AppOptions): FastifyInstance {
             },
           }
         : false,
-    trustProxy: config.trustProxy as boolean | number | string[],
+    trustProxy:
+      typeof config.trustProxy === "boolean"
+        ? config.trustProxy
+        : [...config.trustProxy],
     bodyLimit: config.limits.bodyLimit,
     requestTimeout: config.limits.requestTimeoutMs,
     connectionTimeout: config.limits.connectionTimeoutMs,

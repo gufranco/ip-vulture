@@ -162,7 +162,7 @@ pnpm run local
 Starts the server, opens an ngrok tunnel, waits for the tunnel to publish, and prints the URL. It preflights `node` and `ngrok` and names the install command if either is missing.
 
 > [!IMPORTANT]
-> Set `TRUST_PROXY=1` behind a tunnel or reverse proxy. Left at the default `false`, the recorded address is the proxy's local socket, which is the same value for every caller. Set to `true` and any caller can choose the address you record for them.
+> Set `TRUST_PROXY` to the address or CIDR of your tunnel or reverse proxy. Left at the default `false`, the recorded address is the proxy's local socket, which is the same value for every caller. Set to `true` and any caller can choose the address you record for them. An integer hop count is refused, because it cannot validate the immediate peer.
 
 ### Run it as a container
 
@@ -310,7 +310,7 @@ This is the one outbound flow that carries information about your callers, which
 | Variable | Default | Description |
 |:---------|:--------|:------------|
 | `PORT` | `3000` | Listen port |
-| `TRUST_PROXY` | `false` | `false`, a hop count, or a CIDR list. Must match your real topology |
+| `TRUST_PROXY` | `false` | `false`, `true`, or a CIDR list. Must match your real topology |
 | `SERVER_TEMPLATE` | `apache` | A simulation id, or `random` |
 | `RANDOM_SCOPE` | `startup` | `startup` or `request` |
 | `SIMULATION_DISCLOSURE` | `off` | `header`, `comment`, `both`, or `off` |

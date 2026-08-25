@@ -23,7 +23,7 @@ pnpm run local
 
 Starts the server, opens an ngrok tunnel, waits for the tunnel to publish, and prints the public URL. It preflights both `node` and `ngrok` and names the install command if either is missing. It honours `PORT`.
 
-Set `TRUST_PROXY=1` when running behind a tunnel. Without it the recorded address is the tunnel's local socket, which is the same value for every caller.
+Set `TRUST_PROXY` to the tunnel's address or CIDR when running behind a tunnel. Without it the recorded address is the tunnel's local socket, which is the same value for every caller.
 
 ## Container
 
@@ -42,7 +42,7 @@ docker run --rm \
   --cap-drop ALL --security-opt no-new-privileges:true \
   --log-driver none \
   -p 3000:3000 \
-  -e TRUST_PROXY=1 \
+  -e TRUST_PROXY=127.0.0.1 \
   ip-vulture
 ```
 
@@ -54,15 +54,16 @@ The application writes nothing to disk. Its stdout is separate: under the defaul
 
 ## Behind a reverse proxy
 
-`TRUST_PROXY` accepts three forms, and picking the wrong one corrupts the access log, the alerts, the rate limit, and the blocklist at once, because all four key on the resolved address.
+`TRUST_PROXY` accepts two forms, and picking the wrong one corrupts the access log, the alerts, the rate limit, and the blocklist at once, because all four key on the resolved address.
 
 | Value | Meaning | Use when |
 |:------|:--------|:---------|
 | `false`, the default | Ignore forwarded headers entirely | The process is directly exposed |
-| An integer such as `1` | Trust that many proxy hops | You run exactly that many proxies |
 | A CIDR list | Trust forwarded headers only from these sources | You know your proxy addresses |
 
 Never set `true` on a public deployment. It trusts the header from every caller equally, which means any caller can choose the address you record for them.
+
+An integer hop count is refused at startup. A hop count cannot validate the immediate peer, so a caller who reaches the origin directly can send enough forwarded entries to place any address at the position the count selects. Name the proxy addresses instead.
 
 ## Enabling the admin panel
 

@@ -28,7 +28,7 @@ type SimulationSelection =
   | { readonly mode: "fixed"; readonly id: string }
   | { readonly mode: "random"; readonly scope: RandomScope };
 
-type TrustProxy = boolean | number | readonly string[];
+type TrustProxy = boolean | readonly string[];
 
 interface SimulationFilter {
   readonly era?: Era;
@@ -174,16 +174,10 @@ function parseTrustProxy(env: EnvSource): Parsed<TrustProxy> {
   }
 
   if (/^-?\d+$/.test(value)) {
-    const hops = Number(value);
-
-    if (hops < 0) {
-      return fail(
-        "TRUST_PROXY",
-        `${hops} is not a valid hop count. Use a non-negative integer`,
-      );
-    }
-
-    return ok(hops);
+    return fail(
+      "TRUST_PROXY",
+      `${value} is a hop count. Hop counts no longer validate the immediate peer, which lets a direct caller spoof forwarded headers, so they are refused. Use an address or CIDR list such as 10.0.0.0/8`,
+    );
   }
 
   const entries = unwrap(parseList({ TRUST_PROXY: value }, "TRUST_PROXY", []));
@@ -191,7 +185,7 @@ function parseTrustProxy(env: EnvSource): Parsed<TrustProxy> {
   if (entries.length === 0) {
     return fail(
       "TRUST_PROXY",
-      `"${value}" is not true, false, a hop count, or a comma-separated address list`,
+      `"${value}" is not true, false, or a comma-separated address list`,
     );
   }
 
