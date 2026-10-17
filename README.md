@@ -16,10 +16,10 @@
 </div>
 
 <p align="center">
-  <a href="#quick-start">Quick start</a> &nbsp;|&nbsp;
-  <a href="#the-catalogue">Catalogue</a> &nbsp;|&nbsp;
-  <a href="#access-monitoring">Monitoring</a> &nbsp;|&nbsp;
-  <a href="docs/DATA-HANDLING.md">Data handling</a> &nbsp;|&nbsp;
+  <a href="#quick-start">Quick start</a> |
+  <a href="#the-catalogue">Catalogue</a> |
+  <a href="#access-monitoring">Monitoring</a> |
+  <a href="docs/DATA-HANDLING.md">Data handling</a> |
   <a href="docs/DEPLOYMENT.md">Deployment</a>
 </p>
 
