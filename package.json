@@ -25,20 +25,20 @@
     "fastify": "^5.12.7"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.9",
+    "@biomejs/biome": "^2.5.15",
     "@commitlint/cli": "^21.2.3",
     "@commitlint/config-conventional": "^21.2.3",
     "@faker-js/faker": "^10.6.0",
     "@semantic-release/changelog": "^7.0.0",
     "@semantic-release/git": "^11.0.1",
     "@types/node": "^26.6.5",
-    "@vitest/coverage-v8": "^4.1.11",
+    "@vitest/coverage-v8": "^5.0.5",
     "husky": "^9.1.7",
     "lint-staged": "^17.6.0",
     "semantic-release": "^25.0.9",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
-    "vitest": "^4.1.11"
+    "vitest": "^5.0.5"
   },
   "lint-staged": {
     "*.{ts,js,json}": "biome check --write"
