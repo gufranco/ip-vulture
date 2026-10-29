@@ -7,11 +7,10 @@
 <br>
 <br>
 
-[![CI](https://github.com/gufranco/ip-vulture/actions/workflows/ci.yml/badge.svg)](https://github.com/gufranco/ip-vulture/actions/workflows/ci.yml)
-[![Node](https://img.shields.io/badge/node-%3E%3D24-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org)
-[![Fastify](https://img.shields.io/badge/fastify-5-000000?style=flat-square&logo=fastify&logoColor=white)](https://fastify.dev)
-[![TypeScript](https://img.shields.io/badge/typescript-strict-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
-[![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
+[![ci](https://img.shields.io/github/actions/workflow/status/gufranco/ip-vulture/ci.yml?branch=main&style=flat-square&label=ci)](https://github.com/gufranco/ip-vulture/actions/workflows/ci.yml)
+[![release](https://img.shields.io/github/v/release/gufranco/ip-vulture?style=flat-square&label=release)](https://github.com/gufranco/ip-vulture/releases/latest)
+[![coverage](https://img.shields.io/badge/coverage-93%25-brightgreen?style=flat-square)](https://github.com/gufranco/ip-vulture/actions/workflows/ci.yml)
+[![license](https://img.shields.io/github/license/gufranco/ip-vulture?style=flat-square&label=license)](LICENSE)
 
 </div>
 
