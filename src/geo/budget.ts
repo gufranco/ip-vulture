@@ -28,7 +28,7 @@ function createBudget(options: BudgetOptions): Budget {
 
     const replenished = tokens + elapsed * refillPerMs;
 
-    tokens = replenished > capacity ? capacity : replenished;
+    tokens = Math.min(replenished, capacity);
     lastRefillAt = now;
   }
 

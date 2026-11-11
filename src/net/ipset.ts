@@ -41,6 +41,7 @@ function* mergeAscending(
     if (range.start <= open.end + 1n) {
       open = {
         start: open.start,
+        // biome-ignore lint/complexity/useMathMinMax: Math.max throws a TypeError on bigint operands
         end: range.end > open.end ? range.end : open.end,
       };
       continue;
