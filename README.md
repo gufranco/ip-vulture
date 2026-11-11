@@ -41,10 +41,10 @@ Byte-faithful down to the charset, the header order, and the casing an Apache of
 
 You point it at a port and every request gets a realistic HTTP error response instead of a framework error page. Three uses it was built for:
 
-| Use | Why the simulator helps |
-|:----|:------------------------|
-| Local development | A dependency that returns a real-looking 502 or 503 on demand, without standing up the real thing |
-| Integration testing | Assert your client handles an Apache 500, an nginx 502, and a Traefik plain-text 404, because they differ in ways that break parsers |
+| Use                                | Why the simulator helps                                                                                                                          |
+| :--------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Local development                  | A dependency that returns a real-looking 502 or 503 on demand, without standing up the real thing                                                |
+| Integration testing                | Assert your client handles an Apache 500, an nginx 502, and a Traefik plain-text 404, because they differ in ways that break parsers             |
 | Monitoring your own infrastructure | Put it on a host you control and watch what reaches it. Scanners find open ports quickly, and the access panel shows exactly what they asked for |
 
 Run it on infrastructure you own or are authorized to test. The access monitor records callers, so treat it the way you would treat any server log.
@@ -56,12 +56,14 @@ Run it on infrastructure you own or are authorized to test. The access monitor r
 <td width="50%" valign="top">
 
 ### Nothing leaks the framework
+
 Every method, every path shape, every internal error, and every throttled request renders the simulation. There is no route that returns a JSON error body.
 
 </td>
 <td width="50%" valign="top">
 
 ### Four decades of servers
+
 NCSA httpd and CERN httpd through Envoy and Caddy, plus original early-2000s custom pages with visitor counters and webring footers.
 
 </td>
@@ -70,12 +72,14 @@ NCSA httpd and CERN httpd through Envoy and Caddy, plus original early-2000s cus
 <td width="50%" valign="top">
 
 ### Memory-only history
+
 A bounded ring buffer holds technical request metadata. Nothing is written to disk, and the history dies with the process.
 
 </td>
 <td width="50%" valign="top">
 
 ### Local traffic defense
+
 Nine public reputation and crawler feeds load at startup into a binary-searched range set, plus your own allowlist and blocklist.
 
 </td>
@@ -84,12 +88,14 @@ Nine public reputation and crawler feeds load at startup into a binary-searched 
 <td width="50%" valign="top">
 
 ### Protected access panel
+
 An HTTP Basic route shows the in-memory history. When disabled it is not registered at all, so its path is indistinguishable from any other.
 
 </td>
 <td width="50%" valign="top">
 
 ### Optional e-mail alerts
+
 Coalesced into digests, capped per hour, and behind a circuit breaker, so a scanner sweeping 500 paths does not send 500 e-mails.
 
 </td>
@@ -120,12 +126,12 @@ The trust boundary resolves the caller address before anything keys on it. The c
 
 ### Prerequisites
 
-| Tool | Version | Install |
-|:-----|:--------|:--------|
-| Node.js | >= 24 | [nodejs.org](https://nodejs.org) |
-| pnpm | >= 10 | `corepack enable pnpm` |
-| ngrok | any | [ngrok.com](https://ngrok.com/download), only for tunnel mode |
-| Docker | >= 24 | [docker.com](https://docker.com), only for container mode |
+| Tool    | Version | Install                                                       |
+| :------ | :------ | :------------------------------------------------------------ |
+| Node.js | >= 24   | [nodejs.org](https://nodejs.org)                              |
+| pnpm    | >= 10   | `corepack enable pnpm`                                        |
+| ngrok   | any     | [ngrok.com](https://ngrok.com/download), only for tunnel mode |
+| Docker  | >= 24   | [docker.com](https://docker.com), only for container mode     |
 
 ### Setup
 
@@ -175,12 +181,12 @@ Runs read-only, as a non-root user, with all capabilities dropped and the loggin
 
 24 simulations across four decades. Each renders 9 status codes: 400, 401, 403, 404, 410, 500, 502, 503, and 504.
 
-| Era | Count | Simulations |
-|:----|:-----:|:------------|
-| 1990s | 5 | NCSA httpd 1.5.2, CERN httpd 3.0A, Apache 1.3.42, Microsoft IIS 4.0, Netscape Enterprise 3.6 |
-| 2000s | 8 | Apache 2.0.63, Microsoft IIS 6.0, nginx 0.7.65, Zeus 4.3, plus 4 creative pages |
-| 2010s | 7 | Apache 2.4.62, nginx 1.27.4, OpenResty 1.27.1.1, IIS 10.0, Tomcat 10.1.34, lighttpd 1.4.76, LiteSpeed |
-| 2020s | 4 | Caddy 2, Traefik 3, HAProxy 3, Envoy 1.33 |
+| Era   | Count | Simulations                                                                                           |
+| :---- | :---: | :---------------------------------------------------------------------------------------------------- |
+| 1990s |   5   | NCSA httpd 1.5.2, CERN httpd 3.0A, Apache 1.3.42, Microsoft IIS 4.0, Netscape Enterprise 3.6          |
+| 2000s |   8   | Apache 2.0.63, Microsoft IIS 6.0, nginx 0.7.65, Zeus 4.3, plus 4 creative pages                       |
+| 2010s |   7   | Apache 2.4.62, nginx 1.27.4, OpenResty 1.27.1.1, IIS 10.0, Tomcat 10.1.34, lighttpd 1.4.76, LiteSpeed |
+| 2020s |   4   | Caddy 2, Traefik 3, HAProxy 3, Envoy 1.33                                                             |
 
 Period markers are reproduced, not approximated: the 1990s entries emit no DOCTYPE and use uppercase tags, the 2000s entries use HTML 4.01 with `iso-8859-1`, and the modern edge proxies return minimal or empty bodies.
 
@@ -188,12 +194,12 @@ Period markers are reproduced, not approximated: the 1990s entries emit no DOCTY
 
 Four original pages in early-2000s style, for when a stock server page is not the thing you want to look at.
 
-| Id | What it is |
-|:---|:-----------|
+| Id                  | What it is                                                                               |
+| :------------------ | :--------------------------------------------------------------------------------------- |
 | `construction-zone` | A 2001 personal page with an animated-warning motif, visitor counter, and guestbook link |
-| `lost-in-space` | A 2003 hobby site with an inline-SVG flying saucer |
-| `webring-hub` | A 2002 fan site with a webring footer |
-| `cyber-cafe` | A 2000 small-business site in a fixed 760-pixel table layout |
+| `lost-in-space`     | A 2003 hobby site with an inline-SVG flying saucer                                       |
+| `webring-hub`       | A 2002 fan site with a webring footer                                                    |
+| `cyber-cafe`        | A 2000 small-business site in a fixed 760-pixel table layout                             |
 
 These are original works written from period conventions. No entry reproduces a specific real site, carries real branding, or ships a binary asset: every graphic is inline SVG or CSS, so each page is reviewable as text in a diff.
 
@@ -213,12 +219,12 @@ SERVER_TEMPLATE=random SIMULATION_GENRE=creative
 
 Responses can carry `X-Simulated-Response: ip-vulture; simulated-response`, and HTML bodies a trailing comment saying the same thing. This is **off by default** so responses stay byte-faithful, and is controlled by `SIMULATION_DISCLOSURE`.
 
-| Value | Behavior |
-|:------|:---------|
-| `both` | Header and HTML comment. The default |
-| `header` | Header only |
-| `comment` | HTML comment only, HTML bodies only |
-| `off` | Neither |
+| Value     | Behavior                             |
+| :-------- | :----------------------------------- |
+| `both`    | Header and HTML comment. The default |
+| `header`  | Header only                          |
+| `comment` | HTML comment only, HTML bodies only  |
+| `off`     | Neither                              |
 
 The marker exists so a simulated response is never mistaken for a real one by whoever finds it. It also costs byte-exact fidelity, which is the whole tension: a real Apache does not send that header.
 
@@ -251,14 +257,14 @@ When `ADMIN_ENABLED` is false the routes are never registered, so the path retur
 
 Every request is classified as `human`, `bot`, `scanner`, or `blocked` from local signals only.
 
-| Signal | Source |
-|:-------|:-------|
-| Declared crawler user agent | Local pattern list |
-| Absent user agent or `Accept` header | Request headers |
-| Probe paths such as `/.env`, `/.git/config`, `/wp-login.php` | Local path list |
-| Scanner tooling such as sqlmap, nikto, nuclei | Local pattern list |
-| Operator allowlist and blocklist | `IP_ALLOWLIST`, `IP_BLOCKLIST` |
-| Public reputation feeds | Downloaded at startup |
+| Signal                                                       | Source                         |
+| :----------------------------------------------------------- | :----------------------------- |
+| Declared crawler user agent                                  | Local pattern list             |
+| Absent user agent or `Accept` header                         | Request headers                |
+| Probe paths such as `/.env`, `/.git/config`, `/wp-login.php` | Local path list                |
+| Scanner tooling such as sqlmap, nikto, nuclei                | Local pattern list             |
+| Operator allowlist and blocklist                             | `IP_ALLOWLIST`, `IP_BLOCKLIST` |
+| Public reputation feeds                                      | Downloaded at startup          |
 
 A user agent claiming to be Googlebot from an address outside Google's published ranges is classified as a scanner, which neither fact establishes alone.
 
@@ -275,11 +281,11 @@ Suppressed requests increment a counter and store nothing, so an empty panel sti
 
 Nine public lists, all enabled by default, fetched in parallel at startup and refreshed every 12 hours. They produce roughly 29,000 merged address ranges, queried by binary search.
 
-| Feed | Role |
-|:-----|:-----|
-| Spamhaus DROP, FireHOL level 1, blocklist.de, CINS army list | Reputation |
-| Tor bulk exit list | Reputation |
-| Googlebot, Bingbot, GPTBot, Cloudflare ranges | Crawler verification |
+| Feed                                                         | Role                 |
+| :----------------------------------------------------------- | :------------------- |
+| Spamhaus DROP, FireHOL level 1, blocklist.de, CINS army list | Reputation           |
+| Tor bulk exit list                                           | Reputation           |
+| Googlebot, Bingbot, GPTBot, Cloudflare ranges                | Crawler verification |
 
 They are held in memory and never cached to disk, which is why a restart re-downloads them. A feed that fails is logged by name and startup proceeds with what loaded; set `FEEDS_REQUIRED=true` to refuse to start unfiltered instead. Licences are named in [DATA-HANDLING.md](docs/DATA-HANDLING.md).
 
@@ -306,34 +312,34 @@ This is the one outbound flow that carries information about your callers, which
 
 47 variables, all documented in [`.env.example`](.env.example). The ones that change behavior most:
 
-| Variable | Default | Description |
-|:---------|:--------|:------------|
-| `PORT` | `3000` | Listen port |
-| `TRUST_PROXY` | `false` | `false`, `true`, or a CIDR list. Must match your real topology |
-| `SERVER_TEMPLATE` | `apache` | A simulation id, or `random` |
-| `RANDOM_SCOPE` | `startup` | `startup` or `request` |
-| `SIMULATION_DISCLOSURE` | `off` | `header`, `comment`, `both`, or `off` |
-| `ACCESS_LOG_CAPACITY` | `1000` | Ring buffer size |
-| `RECORD_POLICY` | `human,bot,scanner` | Which classifications are stored |
-| `ALERT_POLICY` | `human` | Which classifications are e-mailed |
-| `FEEDS_ENABLED` | `true` | Download reputation feeds at startup |
-| `GEO_ENABLED` | `false` | Send caller addresses to ip-api.com |
-| `ADMIN_ENABLED` | `false` | Register the admin panel |
+| Variable                | Default             | Description                                                    |
+| :---------------------- | :------------------ | :------------------------------------------------------------- |
+| `PORT`                  | `3000`              | Listen port                                                    |
+| `TRUST_PROXY`           | `false`             | `false`, `true`, or a CIDR list. Must match your real topology |
+| `SERVER_TEMPLATE`       | `apache`            | A simulation id, or `random`                                   |
+| `RANDOM_SCOPE`          | `startup`           | `startup` or `request`                                         |
+| `SIMULATION_DISCLOSURE` | `off`               | `header`, `comment`, `both`, or `off`                          |
+| `ACCESS_LOG_CAPACITY`   | `1000`              | Ring buffer size                                               |
+| `RECORD_POLICY`         | `human,bot,scanner` | Which classifications are stored                               |
+| `ALERT_POLICY`          | `human`             | Which classifications are e-mailed                             |
+| `FEEDS_ENABLED`         | `true`              | Download reputation feeds at startup                           |
+| `GEO_ENABLED`           | `false`             | Send caller addresses to ip-api.com                            |
+| `ADMIN_ENABLED`         | `false`             | Register the admin panel                                       |
 
 Every value is validated at startup, and all failures are reported at once rather than one restart at a time.
 
 ## Development
 
-| Command | Description |
-|:--------|:------------|
-| `pnpm start` | Start the server |
-| `pnpm dev` | Start with auto-reload |
-| `pnpm run local` | Start with an ngrok tunnel |
-| `pnpm test` | Run the suite |
+| Command                | Description                              |
+| :--------------------- | :--------------------------------------- |
+| `pnpm start`           | Start the server                         |
+| `pnpm dev`             | Start with auto-reload                   |
+| `pnpm run local`       | Start with an ngrok tunnel               |
+| `pnpm test`            | Run the suite                            |
 | `pnpm test --coverage` | Run with coverage and enforce thresholds |
-| `pnpm run lint` | Check formatting and lint rules |
-| `pnpm run lint:fix` | Apply formatting and lint fixes |
-| `pnpm run typecheck` | Run the type checker |
+| `pnpm run lint`        | Check formatting and lint rules          |
+| `pnpm run lint:fix`    | Apply formatting and lint fixes          |
+| `pnpm run typecheck`   | Run the type checker                     |
 
 ### Adding a simulation
 

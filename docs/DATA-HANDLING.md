@@ -8,20 +8,20 @@ ip-vulture keeps a bounded access history in memory and writes nothing to disk. 
 
 One record per request, holding technical request metadata only. The full field list is fixed in [`src/monitoring/accessLog.ts`](../src/monitoring/accessLog.ts) and enforced by a test that fails if any field outside the list is stored.
 
-| Field | Source | Bound |
-|:------|:-------|:------|
-| `timestamp` | Server clock, ISO 8601 UTC | 32 characters |
-| `method` | Request line | 16 characters |
-| `path` | Request target, query string removed | 2048 characters |
-| `statusCode` | Response | numeric |
-| `ip` | Socket address, or the forwarded header only when `TRUST_PROXY` says a proxy is trusted | 64 characters |
-| `userAgent` | `User-Agent` header | 512 characters |
-| `referer` | `Referer` header | 512 characters |
-| `host` | `Host` header | 253 characters |
-| `protocol` | Connection scheme | 16 characters |
-| `durationMs` | Server-measured handling time | numeric |
-| `simulationId` | Which catalogue entry answered | 64 characters |
-| `classification` | Local classifier verdict | 32 characters |
+| Field            | Source                                                                                  | Bound           |
+| :--------------- | :-------------------------------------------------------------------------------------- | :-------------- |
+| `timestamp`      | Server clock, ISO 8601 UTC                                                              | 32 characters   |
+| `method`         | Request line                                                                            | 16 characters   |
+| `path`           | Request target, query string removed                                                    | 2048 characters |
+| `statusCode`     | Response                                                                                | numeric         |
+| `ip`             | Socket address, or the forwarded header only when `TRUST_PROXY` says a proxy is trusted | 64 characters   |
+| `userAgent`      | `User-Agent` header                                                                     | 512 characters  |
+| `referer`        | `Referer` header                                                                        | 512 characters  |
+| `host`           | `Host` header                                                                           | 253 characters  |
+| `protocol`       | Connection scheme                                                                       | 16 characters   |
+| `durationMs`     | Server-measured handling time                                                           | numeric         |
+| `simulationId`   | Which catalogue entry answered                                                          | 64 characters   |
+| `classification` | Local classifier verdict                                                                | 32 characters   |
 
 The query string is stripped before the path is stored, so a token or session identifier passed as a query parameter is never recorded.
 
@@ -61,17 +61,17 @@ When `FEEDS_ENABLED` is true, the process downloads public reputation and crawle
 
 The lists are parsed into memory and never written to disk, which is why they are re-downloaded on every restart.
 
-| Feed | Purpose | Licence |
-|:-----|:--------|:--------|
-| Spamhaus DROP | Hijacked and non-routable networks | Spamhaus DROP terms, free for non-commercial use with attribution |
-| FireHOL level 1 | Aggregate of high-confidence sources | Aggregate, per-source licences apply |
-| Tor bulk exit list | Tor exit nodes | Public data published by the Tor Project |
-| blocklist.de | Addresses reported attacking public services | Free for personal and commercial use per blocklist.de |
-| CINS army list | Reputation scoring | CINS Score public list |
-| Googlebot ranges | Verify a self-declared Googlebot | Published by Google |
-| Bingbot ranges | Verify a self-declared Bingbot | Published by Microsoft |
-| GPTBot ranges | Verify a self-declared GPTBot | Published by OpenAI |
-| Cloudflare ranges | Recognize a known proxy front | Published by Cloudflare |
+| Feed               | Purpose                                      | Licence                                                           |
+| :----------------- | :------------------------------------------- | :---------------------------------------------------------------- |
+| Spamhaus DROP      | Hijacked and non-routable networks           | Spamhaus DROP terms, free for non-commercial use with attribution |
+| FireHOL level 1    | Aggregate of high-confidence sources         | Aggregate, per-source licences apply                              |
+| Tor bulk exit list | Tor exit nodes                               | Public data published by the Tor Project                          |
+| blocklist.de       | Addresses reported attacking public services | Free for personal and commercial use per blocklist.de             |
+| CINS army list     | Reputation scoring                           | CINS Score public list                                            |
+| Googlebot ranges   | Verify a self-declared Googlebot             | Published by Google                                               |
+| Bingbot ranges     | Verify a self-declared Bingbot               | Published by Microsoft                                            |
+| GPTBot ranges      | Verify a self-declared GPTBot                | Published by OpenAI                                               |
+| Cloudflare ranges  | Recognize a known proxy front                | Published by Cloudflare                                           |
 
 Confirm each licence against its current terms before relying on it commercially. The summaries above were recorded when the feed list was assembled and are not a substitute for reading the source.
 
@@ -87,10 +87,10 @@ If you change the logging driver, you have reintroduced disk persistence for wha
 
 ## Verifying the claims
 
-| Claim | How to check |
-|:------|:-------------|
-| Only the listed fields are stored | `pnpm vitest run src/monitoring` |
+| Claim                                             | How to check                                                                            |
+| :------------------------------------------------ | :-------------------------------------------------------------------------------------- |
+| Only the listed fields are stored                 | `pnpm vitest run src/monitoring`                                                        |
 | Nothing is written to disk during a request sweep | Run the container with `--read-only` and no tmpfs mount beyond `/tmp`, then sweep paths |
-| The history dies with the process | Populate the panel, restart, reload the panel |
-| Geolocation makes no call when disabled | `pnpm vitest run src/geo` |
-| The query string never reaches a record | `pnpm vitest run src/__tests__/app.test.ts` |
+| The history dies with the process                 | Populate the panel, restart, reload the panel                                           |
+| Geolocation makes no call when disabled           | `pnpm vitest run src/geo`                                                               |
+| The query string never reaches a record           | `pnpm vitest run src/__tests__/app.test.ts`                                             |

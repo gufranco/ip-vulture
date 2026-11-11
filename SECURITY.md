@@ -16,14 +16,14 @@ The `main` branch is the only supported version. Fixes land there and reach user
 
 This project simulates HTTP server error responses and records access metadata in memory. The security surface worth reporting:
 
-| Area | What matters |
-|:-----|:-------------|
-| Admin panel | Authentication bypass, timing attacks on credential comparison, stored XSS through recorded fields |
-| Access log | Any path that causes a field outside the declared set to be stored, or that writes history to disk |
-| Simulation renderer | Reflected XSS through the request path, method, or host |
-| Reputation feeds | Parser behavior on a hostile or malformed feed response |
-| SMTP transport | Header injection through the digest, or credential exposure in logs |
-| Configuration | A default that is unsafe when the process is publicly exposed |
+| Area                | What matters                                                                                       |
+| :------------------ | :------------------------------------------------------------------------------------------------- |
+| Admin panel         | Authentication bypass, timing attacks on credential comparison, stored XSS through recorded fields |
+| Access log          | Any path that causes a field outside the declared set to be stored, or that writes history to disk |
+| Simulation renderer | Reflected XSS through the request path, method, or host                                            |
+| Reputation feeds    | Parser behavior on a hostile or malformed feed response                                            |
+| SMTP transport      | Header injection through the digest, or credential exposure in logs                                |
+| Configuration       | A default that is unsafe when the process is publicly exposed                                      |
 
 ## Out of scope
 
