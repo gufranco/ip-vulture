@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.2](https://github.com/gufranco/ip-vulture/compare/v2.0.1...v2.0.2) (2026-11-11)
+
+
+### Bug Fixes
+
+* **deps:** bump the fastify group across 1 directory with 2 updates ([#33](https://github.com/gufranco/ip-vulture/issues/33)) ([05df0fe](https://github.com/gufranco/ip-vulture/commit/05df0feffdc17bee4ce99236220a61e8f8285c9a))
+
 ## [2.0.1](https://github.com/gufranco/ip-vulture/compare/v2.0.0...v2.0.1) (2026-10-27)
 
 
